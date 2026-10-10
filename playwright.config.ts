@@ -17,7 +17,11 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Desktop Chrome"], viewport: { width: 375, height: 812 } } },
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
   ],
-  webServer: process.env.E2E_BASE_URL
-    ? undefined
-    : { command: "npm run dev", url: "http://localhost:3000/logga-in", reuseExistingServer: true },
+  webServer: [
+    // Stands in for the Claude API; start the app with ANTHROPIC_BASE_URL=http://127.0.0.1:4010.
+    { command: "node e2e/mock-anthropic.mjs", url: "http://127.0.0.1:4010/health", reuseExistingServer: true },
+    ...(process.env.E2E_BASE_URL
+      ? []
+      : [{ command: "npm run dev", url: "http://localhost:3000/logga-in", reuseExistingServer: true }]),
+  ],
 });

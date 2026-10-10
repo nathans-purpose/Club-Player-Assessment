@@ -1,3 +1,4 @@
+import type { UncertainField } from "./import/schema";
 import type { SquadGroup } from "./squad-groups";
 
 export type ReviewRow = {
@@ -5,7 +6,7 @@ export type ReviewRow = {
   fullName: string;
   squadGroup: SquadGroup | "";
   /** Fields an importer was unsure about, e.g. ["full_name"]. */
-  uncertainFields?: string[];
+  uncertainFields?: UncertainField[];
 };
 
 export type ReviewStatus = "klar" | "kontrollera-stavningen" | "nummer-saknas" | "valj-lagdel" | "dubblett";
@@ -28,7 +29,8 @@ function duplicateKey(shirtNumber: string, fullName: string): string {
 
 function looksMisspelled(row: ReviewRow): boolean {
   const name = row.fullName.trim();
-  if (row.uncertainFields?.includes("full_name")) return true;
+  // An importer that could not read the name or number well asks for a look.
+  if (row.uncertainFields?.includes("full_name") || row.uncertainFields?.includes("shirt_number")) return true;
   // A first name only, digits, or characters names don't usually have.
   return name.split(/\s+/).length < 2 || /[\d_@#$%&*=+<>{}[\]\\/|~^]/.test(name);
 }
@@ -58,7 +60,7 @@ export function reviewStatuses(
     if ((counts.get(duplicateKey(row.shirtNumber, row.fullName)) ?? 0) > 1) return "dubblett";
     if (!row.fullName.trim() || looksMisspelled(row)) return "kontrollera-stavningen";
     if (!row.shirtNumber.trim()) return "nummer-saknas";
-    if (!row.squadGroup) return "valj-lagdel";
+    if (!row.squadGroup || row.uncertainFields?.includes("squad_group")) return "valj-lagdel";
     return "klar";
   });
 }

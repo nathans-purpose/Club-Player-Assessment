@@ -39,6 +39,9 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
       E2E_BASE_URL: http://localhost:3000
+      # The player import talks to e2e/mock-anthropic.mjs, started by Playwright.
+      ANTHROPIC_BASE_URL: http://127.0.0.1:4010
+      ANTHROPIC_API_KEY: e2e-placeholder
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
