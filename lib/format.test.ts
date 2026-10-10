@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCount, formatPercent, formatRate, formatRateShort, formatScore } from "./format";
+import { formatCount, formatDate, formatPercent, formatRate, formatRateShort, formatScore } from "./format";
 
 describe("formatScore", () => {
   it("uses one decimal and a comma", () => {
@@ -30,5 +30,12 @@ describe("formatCount", () => {
   it("shows whole numbers", () => {
     expect(formatCount(12)).toBe("12");
     expect(formatCount(null)).toBe("–");
+  });
+});
+
+describe("formatDate", () => {
+  it("writes the date in Swedish, in Swedish time", () => {
+    expect(formatDate("2026-10-10T08:00:00Z")).toBe("10 oktober 2026");
+    expect(formatDate("2026-10-09T22:30:00Z")).toBe("10 oktober 2026");
   });
 });

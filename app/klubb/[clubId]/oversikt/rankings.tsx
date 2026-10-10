@@ -1,5 +1,6 @@
 "use client";
 
+import { EditableText } from "@/components/text-edit";
 import type { Extreme } from "@/lib/calc";
 import type { MetricKey, Overview } from "@/lib/overview";
 import type { OverviewCopy } from "./copy";
@@ -55,7 +56,7 @@ export function Rankings({
           .replace("{metric}", metricLabel(metric, copy, overview))
           .replace("{value}", value)
           .replace("{who}", name + (muted ? ` (${copy.player.few})` : ""))}
-        className={`${CHIP} border-border hover:bg-surface-muted ${muted ? "opacity-60" : ""}`}
+        className={`${CHIP} hover:bg-surface-muted ${muted ? "border-dashed border-muted bg-surface-muted" : "border-border"}`}
       >
         <span className="text-xs text-muted">{label}</span>
         <span className="font-semibold">{value}</span>
@@ -67,10 +68,8 @@ export function Rankings({
   return (
     <section aria-labelledby="rankings-heading" className="flex flex-col gap-3">
       <div>
-        <h2 id="rankings-heading" className="text-lg font-semibold">
-          {copy.rankings.title}
-        </h2>
-        <p className="text-sm text-muted">{copy.rankings.hint}</p>
+        <EditableText as="h2" id="rankings-heading" className="text-lg font-semibold" {...copy.editable.rankings} />
+        <EditableText as="p" className="text-sm text-muted" {...copy.editable.rankingsHint} />
       </div>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {overview.rankings.map((r) => {

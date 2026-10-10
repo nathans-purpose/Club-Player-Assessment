@@ -1,5 +1,7 @@
 "use client";
 
+import { EditableText } from "@/components/text-edit";
+import type { EditableCopy } from "@/lib/i18n";
 import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from "react";
 import { formatCount, formatPercent, formatScore } from "@/lib/format";
 import { higherIsBetter, type MetricKey, type Overview, type SortKey } from "@/lib/overview";
@@ -23,7 +25,7 @@ export function OverviewView({
   copy,
 }: {
   clubId: string;
-  heading: { kicker: string; title: string };
+  heading: { kicker: string; title: EditableCopy };
   overview: Overview;
   submittedByMe: string[];
   initialTab: Tab;
@@ -76,7 +78,7 @@ export function OverviewView({
     <>
       <div>
         <p className="text-sm text-muted">{heading.kicker}</p>
-        <h1 className="mt-1 text-2xl font-bold">{heading.title}</h1>
+        <EditableText as="h1" className="mt-1 text-2xl font-bold" {...heading.title} />
       </div>
 
       <div role="tablist" aria-label={copy.tabs.label} className="flex gap-1 border-b border-border">
@@ -128,7 +130,7 @@ export function OverviewView({
             <h2 className="text-lg font-semibold">
               {copy.waiting.title.replace("{done}", String(kpis.submitted)).replace("{total}", String(kpis.expected))}
             </h2>
-            <p className="mt-2 max-w-prose text-muted">{copy.waiting.body}</p>
+            <EditableText as="p" className="mt-2 max-w-prose text-muted" {...copy.editable.waitingBody} />
             <button
               type="button"
               onClick={() => selectTab("data")}

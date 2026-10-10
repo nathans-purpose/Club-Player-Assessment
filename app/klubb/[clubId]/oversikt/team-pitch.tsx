@@ -1,5 +1,6 @@
 "use client";
 
+import { EditableText } from "@/components/text-edit";
 import { useEffect, useId, useRef, useState } from "react";
 import { Pitch, pitchSpotStyle } from "@/components/pitch";
 import { glows, scaleColor } from "@/lib/calc";
@@ -99,9 +100,7 @@ export function TeamPitch({
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
-      <h2 id={headingId} className="text-lg font-semibold">
-        {copy.pitch.title}
-      </h2>
+      <EditableText as="h2" id={headingId} className="text-lg font-semibold" {...copy.editable.pitch} />
       <div role="group" aria-label={copy.pitch.metrics} className="flex flex-wrap gap-1.5">
         {metrics.map((m) => (
           <button

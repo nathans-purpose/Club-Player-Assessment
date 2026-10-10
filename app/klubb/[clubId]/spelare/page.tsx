@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { GuardianInfo } from "@/components/guardian-info";
 import { loadPlayers, requireClubMember } from "@/lib/assessment/data";
 import { leaderProgress } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS } from "@/lib/players/squad-groups";
+import { guardianInfoCopy } from "@/lib/privacy/guardian";
 import { PlayerList, type PlayerListItem } from "./player-list";
 import { ProgressBar } from "./progress-bar";
 
@@ -36,6 +39,11 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
   );
 
   const items: PlayerListItem[] = players.map((p) => ({ ...p, status: statusOf.get(p.id) ?? "none" }));
+  // Teams with players under 18: the admin gets the guardian text until they confirm it was sent.
+  const guardian =
+    role === "admin" && team?.hasMinors && !team.guardianInfoConfirmedAt
+      ? guardianInfoCopy(club.name, team.name)
+      : null;
 
   return (
     <>
@@ -45,22 +53,32 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
           {team && ` · ${team.name}`}
           {season && ` · ${season.label}`}
         </p>
-        <h1 className="mt-1 text-2xl font-bold">{t("players.title", "Bedöm spelare")}</h1>
-        <p className="mt-2 text-muted">
-          {t(
+        <EditableText as="h1" className="mt-1 text-2xl font-bold" {...te("players.title", "Bedöm spelare")} />
+        <EditableText
+          as="p"
+          className="mt-2 text-muted"
+          {...te(
             "players.intro",
             "Bedöm varje spelare på egen hand. Andra ledare ser din bedömning först när du har skickat in den.",
           )}
-        </p>
+        />
       </div>
 
+      {guardian && <GuardianInfo clubId={clubId} text={guardian.text} confirmedOn={null} copy={guardian.copy} />}
+
       {!season ? (
-        <p className="rounded-lg border border-border bg-surface p-4">
-          {t("players.noSeason", "Laget har ingen aktiv säsong ännu.")}
-        </p>
+        <EditableText
+          as="p"
+          className="rounded-lg border border-border bg-surface p-4"
+          {...te("players.noSeason", "Laget har ingen aktiv säsong ännu.")}
+        />
       ) : players.length === 0 ? (
         <section className="rounded-lg border border-border bg-surface p-6">
-          <h2 className="text-lg font-semibold">{t("players.empty.title", "Inga spelare i laget än")}</h2>
+          <EditableText
+            as="h2"
+            className="text-lg font-semibold"
+            {...te("players.empty.title", "Inga spelare i laget än")}
+          />
           {role === "admin" ? (
             <Link
               href={`/kom-igang/${clubId}/spelare`}
@@ -69,9 +87,11 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
               {t("players.empty.add", "Lägg till spelare")}
             </Link>
           ) : (
-            <p className="mt-2 text-muted">
-              {t("players.empty.leader", "När en admin har lagt till truppen kan du börja bedöma.")}
-            </p>
+            <EditableText
+              as="p"
+              className="mt-2 text-muted"
+              {...te("players.empty.leader", "När en admin har lagt till truppen kan du börja bedöma.")}
+            />
           )}
         </section>
       ) : (

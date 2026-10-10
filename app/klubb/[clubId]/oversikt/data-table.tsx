@@ -172,7 +172,8 @@ export function DataTable({
               </tr>
             )}
             {rows.map((p) => (
-              <tr key={p.id} className={`border-b border-border last:border-0 ${p.fewAssessments ? "text-muted" : ""}`}>
+              // Few assessments: italic and marked, not greyed out, so the numbers stay readable on the heat colours.
+              <tr key={p.id} className={`border-b border-border last:border-0 ${p.fewAssessments ? "italic" : ""}`}>
                 {columns.map((c) => {
                   const active = sortable(c) === sort.key;
                   const highlight = active ? "outline outline-1 -outline-offset-1 outline-primary/40" : "";
@@ -218,7 +219,7 @@ export function DataTable({
                     return (
                       <td key={c.key} className="whitespace-nowrap px-2 py-1">
                         {p.submittedCount}
-                        {p.fewAssessments && <span className="ml-1 text-xs">({copy.player.few})</span>}
+                        {p.fewAssessments && <span className="ml-1 text-xs text-muted">({copy.player.few})</span>}
                       </td>
                     );
                   }

@@ -1,5 +1,6 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
+import { setRequestTexts } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -23,7 +24,7 @@ export async function requireAdminClub(clubId: string): Promise<AdminClub> {
   const userId = claims?.claims?.sub;
   if (!userId) redirect("/logga-in");
 
-  const [{ data: membership }, { data: club }, { data: team }] = await Promise.all([
+  const [{ data: membership }, { data: club }, { data: team }, { data: texts }] = await Promise.all([
     supabase.from("club_members").select("role").eq("club_id", clubId).eq("user_id", userId).maybeSingle(),
     supabase.from("clubs").select("id, name, crest_url").eq("id", clubId).maybeSingle(),
     supabase
@@ -33,8 +34,11 @@ export async function requireAdminClub(clubId: string): Promise<AdminClub> {
       .order("created_at")
       .limit(1)
       .maybeSingle(),
+    supabase.from("ui_text_overrides").select("key, value").eq("club_id", clubId),
   ]);
 
   if (!club || membership?.role !== "admin") notFound();
+  // The club's own wording (Redigera texter) for every t() after this.
+  setRequestTexts(Object.fromEntries((texts ?? []).map((row) => [row.key as string, row.value as string])));
   return { userId, club, team };
 }

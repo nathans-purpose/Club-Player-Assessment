@@ -8,7 +8,7 @@ import { signOut } from "./logga-in/actions";
 
 type Membership = { role: "admin" | "leader"; clubs: { id: string; name: string } | null };
 
-export default function HomePage() {
+export default function HomePage({ searchParams }: PageProps<"/">) {
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border bg-surface">
@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
         <Suspense fallback={<p className="text-muted">{t("common.loading", "Laddar …")}</p>}>
-          <HomeContent />
+          <HomeContent searchParams={searchParams} />
         </Suspense>
       </main>
     </div>
@@ -35,7 +35,7 @@ export default function HomePage() {
 }
 
 // Reads the session, so it streams in behind the Suspense boundary.
-async function HomeContent() {
+async function HomeContent({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -47,13 +47,20 @@ async function HomeContent() {
   ]);
 
   const name = profile?.full_name || profile?.email || "";
+  const { raderad } = await searchParams;
   const clubs = (memberships ?? []).filter((m) => m.clubs);
 
   return (
     <>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-2xl font-bold [overflow-wrap:anywhere]">
         {name ? t("home.greeting", "Hej {name}!").replace("{name}", name) : t("home.greetingNoName", "Hej!")}
       </h1>
+
+      {raderad === "1" && (
+        <p role="status" className="rounded-lg border border-border bg-surface p-4">
+          {t("home.clubDeleted", "Klubben och all dess data är raderad.")}
+        </p>
+      )}
 
       {clubs.length > 0 ? (
         <section aria-labelledby="clubs-heading" className="flex flex-col gap-3">
@@ -68,18 +75,30 @@ async function HomeContent() {
               >
                 <span className="font-medium">{m.clubs!.name}</span>
                 <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm">
-                  <Link href={`/klubb/${m.clubs!.id}/spelare`} className="font-semibold underline">
+                  <Link
+                    href={`/klubb/${m.clubs!.id}/spelare`}
+                    className="inline-flex min-h-11 items-center font-semibold underline"
+                  >
                     {t("home.clubs.assess", "Bedöm spelare")}
                   </Link>
-                  <Link href={`/klubb/${m.clubs!.id}/oversikt`} className="font-semibold underline">
+                  <Link
+                    href={`/klubb/${m.clubs!.id}/oversikt`}
+                    className="inline-flex min-h-11 items-center font-semibold underline"
+                  >
                     {t("home.clubs.overview", "Översikt")}
                   </Link>
                   {m.role === "admin" && (
                     <>
-                      <Link href={`/kom-igang/${m.clubs!.id}/spelare`} className="underline">
+                      <Link
+                        href={`/kom-igang/${m.clubs!.id}/spelare`}
+                        className="inline-flex min-h-11 items-center underline"
+                      >
                         {t("home.clubs.players", "Lägg till spelare")}
                       </Link>
-                      <Link href={`/kom-igang/${m.clubs!.id}/ledare`} className="underline">
+                      <Link
+                        href={`/kom-igang/${m.clubs!.id}/ledare`}
+                        className="inline-flex min-h-11 items-center underline"
+                      >
                         {t("home.clubs.leaders", "Bjud in ledare")}
                       </Link>
                     </>
@@ -91,7 +110,10 @@ async function HomeContent() {
               </li>
             ))}
           </ul>
-          <Link href="/kom-igang/klubb" className="self-start text-sm font-medium underline">
+          <Link
+            href="/kom-igang/klubb"
+            className="inline-flex min-h-11 items-center self-start text-sm font-medium underline"
+          >
             {t("home.clubs.create", "Skapa en ny klubb")}
           </Link>
         </section>

@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { requireClubMember } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { DisplayOptions } from "./display-options";
 
 export const metadata: Metadata = { title: `Inställningar – ${APP_NAME}` };
@@ -41,6 +42,14 @@ async function Settings({ params }: Pick<PageProps<"/klubb/[clubId]/installninga
       body: t("settings.positionsBody", "Vilka positioner som visas och hur många spelare ni behöver på varje."),
     },
     {
+      href: `${base}/data`,
+      title: t("settings.data", "Data och integritet"),
+      body: t(
+        "settings.dataBody",
+        "Exportera klubbens data, radera spelare eller hela klubben, och information till vårdnadshavare.",
+      ),
+    },
+    {
       href: `${base}/sa-raknas-det`,
       title: t("settings.howItWorks", "Så räknas det"),
       body: t("settings.howItWorksBody", "Hur snitt, oenighet, närvaro och positioner räknas. Alla ledare ser sidan."),
@@ -51,7 +60,7 @@ async function Settings({ params }: Pick<PageProps<"/klubb/[clubId]/installninga
     <>
       <div>
         <p className="text-sm text-muted">{[club.name, team?.name].filter(Boolean).join(" · ")}</p>
-        <h1 className="mt-1 text-2xl font-bold">{t("settings.title", "Inställningar")}</h1>
+        <EditableText as="h1" className="mt-1 text-2xl font-bold" {...te("settings.title", "Inställningar")} />
       </div>
 
       <ul className="grid gap-3 sm:grid-cols-2">

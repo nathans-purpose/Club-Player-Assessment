@@ -25,7 +25,8 @@ import {
 } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
 import { formatPercent, formatScore } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS, type SquadGroup } from "@/lib/players/squad-groups";
 import { POSITION_CODES, POSITION_LABELS, POSITION_LEVEL_LABELS, type PositionCode } from "@/lib/positions";
 
@@ -114,7 +115,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
             {t("combined.yourAssessment", "Din bedömning")}
           </Link>
         </div>
-        <p className="text-sm text-muted">{t("combined.kicker", "Samlad bedömning")}</p>
+        <EditableText as="p" className="text-sm text-muted" {...te("combined.kicker", "Samlad bedömning")} />
         <h1 className="text-2xl font-bold">
           {player.shirt_number && <span className="mr-2 font-mono text-muted">{player.shirt_number}</span>}
           {player.full_name}
@@ -153,12 +154,20 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
       </section>
 
       <section aria-labelledby="positions-heading" className="flex flex-col gap-3">
-        <h2 id="positions-heading" className="text-lg font-semibold">
-          {t("combined.positions", "Positioner")}
-        </h2>
-        <p className="text-sm text-muted">
-          {t("combined.positionsHint", "Färgen visar snittnivån. Siffran visar hur många ledare som valde positionen.")}
-        </p>
+        <EditableText
+          as="h2"
+          id="positions-heading"
+          className="text-lg font-semibold"
+          {...te("combined.positions", "Positioner")}
+        />
+        <EditableText
+          as="p"
+          className="text-sm text-muted"
+          {...te(
+            "combined.positionsHint",
+            "Färgen visar snittnivån. Siffran visar hur många ledare som valde positionen.",
+          )}
+        />
         <Pitch label={t("combined.pitch", "Positioner på planen")}>
           {pitchCodes.map((code) => {
             const p = positionByCode.get(code);
@@ -201,15 +210,22 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">{t("combined.noPositions", "Inga positioner valda.")}</p>
+          <EditableText
+            as="p"
+            className="text-sm text-muted"
+            {...te("combined.noPositions", "Inga positioner valda.")}
+          />
         )}
       </section>
 
       {phases.length > 0 && (
         <section aria-labelledby="attendance-heading" className="flex flex-col gap-3">
-          <h2 id="attendance-heading" className="text-lg font-semibold">
-            {t("combined.attendance", "Träningsnärvaro")}
-          </h2>
+          <EditableText
+            as="h2"
+            id="attendance-heading"
+            className="text-lg font-semibold"
+            {...te("combined.attendance", "Träningsnärvaro")}
+          />
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {phases.map((phase) => {
               const value = phaseAttendance(calc, phase.id);
@@ -221,7 +237,9 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
                 >
                   <span className="block text-sm text-muted">{phase.name}</span>
                   <span className="text-xl font-bold">{formatPercent(value)}</span>
-                  {low && <span className="ml-2 text-sm font-medium text-danger">{t("combined.lowAttendance", "Låg")}</span>}
+                  {low && (
+                    <span className="ml-2 text-sm font-medium text-danger">{t("combined.lowAttendance", "Låg")}</span>
+                  )}
                 </li>
               );
             })}
@@ -230,9 +248,12 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
       )}
 
       <section aria-labelledby="categories-heading" className="flex flex-col gap-3">
-        <h2 id="categories-heading" className="text-lg font-semibold">
-          {t("combined.categories", "Betyg")}
-        </h2>
+        <EditableText
+          as="h2"
+          id="categories-heading"
+          className="text-lg font-semibold"
+          {...te("combined.categories", "Betyg")}
+        />
         <ul className="flex flex-col gap-3">
           {summary.categories.map((c) => {
             const category = categories.all.find((x) => x.id === c.categoryId)!;
@@ -270,9 +291,12 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
       </section>
 
       <section aria-labelledby="comments-heading" className="flex flex-col gap-3">
-        <h2 id="comments-heading" className="text-lg font-semibold">
-          {t("combined.comments", "Kommentarer")}
-        </h2>
+        <EditableText
+          as="h2"
+          id="comments-heading"
+          className="text-lg font-semibold"
+          {...te("combined.comments", "Kommentarer")}
+        />
         {comments.length > 0 ? (
           <ul className="flex flex-col gap-2">
             {comments.map((a) => (
@@ -283,7 +307,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">{t("combined.noComments", "Inga kommentarer.")}</p>
+          <EditableText as="p" className="text-sm text-muted" {...te("combined.noComments", "Inga kommentarer.")} />
         )}
       </section>
     </>
@@ -352,28 +376,30 @@ function ScoreRow({
           <ScoreValue value={summary.average} />
         </span>
       </div>
-      {spreadLabel !== null ? (
-        chips.length > 1 && (
-          <p className="text-sm text-muted">
-            {spreadLabel
-              .replace("{min}", formatChipScore(Math.min(...chips.map((p) => p.score))))
-              .replace("{max}", formatChipScore(Math.max(...chips.map((p) => p.score))))}
-          </p>
-        )
-      ) : chips.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5">
-          {chips.map((p) => (
-            <li
-              key={p.leaderId}
-              className={`rounded-full border px-2.5 py-0.5 text-sm ${
-                p.leaderId === userId ? "border-primary bg-primary/10 font-semibold" : "border-border bg-surface-muted"
-              }`}
-            >
-              {nameOf(p.leaderId)}: {formatChipScore(p.score)}
-            </li>
-          ))}
-        </ul>
-      )}
+      {spreadLabel !== null
+        ? chips.length > 1 && (
+            <p className="text-sm text-muted">
+              {spreadLabel
+                .replace("{min}", formatChipScore(Math.min(...chips.map((p) => p.score))))
+                .replace("{max}", formatChipScore(Math.max(...chips.map((p) => p.score))))}
+            </p>
+          )
+        : chips.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {chips.map((p) => (
+                <li
+                  key={p.leaderId}
+                  className={`rounded-full border px-2.5 py-0.5 text-sm ${
+                    p.leaderId === userId
+                      ? "border-primary bg-primary/10 font-semibold"
+                      : "border-border bg-surface-muted"
+                  }`}
+                >
+                  {nameOf(p.leaderId)}: {formatChipScore(p.score)}
+                </li>
+              ))}
+            </ul>
+          )}
     </div>
   );
 }

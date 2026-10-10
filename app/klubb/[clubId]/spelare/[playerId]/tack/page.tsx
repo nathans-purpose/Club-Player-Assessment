@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import { isUuid, loadPlayers, loadSubmittedPlayerIds, requireClubMember } from "@/lib/assessment/data";
 import { leaderProgress, nextUnassessed } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { ProgressBar } from "../../progress-bar";
 
 export const metadata: Metadata = { title: `Tack! – ${APP_NAME}` };
@@ -41,7 +42,7 @@ async function ThankYou({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
   return (
     <section className="mx-auto flex w-full max-w-md flex-col gap-6 py-6 text-center">
       <div>
-        <h1 className="text-2xl font-bold">{t("thanks.title", "Tack!")}</h1>
+        <EditableText as="h1" className="text-2xl font-bold" {...te("thanks.title", "Tack!")} />
         <p className="mt-2 text-muted">
           {t("thanks.body", "Din bedömning av {name} är inskickad.").replace("{name}", player.fullName)}
         </p>
@@ -67,7 +68,11 @@ async function ThankYou({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
         </Link>
       ) : (
         <div className="rounded-lg border border-primary/40 bg-primary/10 p-4">
-          <p className="font-semibold">{t("thanks.allDone", "Du har bedömt alla spelare. Bra jobbat!")}</p>
+          <EditableText
+            as="p"
+            className="font-semibold"
+            {...te("thanks.allDone", "Du har bedömt alla spelare. Bra jobbat!")}
+          />
           <Link href={base} className="mt-2 inline-flex min-h-11 items-center underline">
             {t("thanks.toList", "Till spelarlistan")}
           </Link>

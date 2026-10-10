@@ -29,3 +29,15 @@ export function formatRateShort(value: number | null): string {
 export function formatCount(value: number | null): string {
   return value === null ? "–" : whole.format(value);
 }
+
+const date = new Intl.DateTimeFormat("sv-SE", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Europe/Stockholm",
+});
+
+/** "2026-10-10T08:00:00Z" → "10 oktober 2026" (Swedish time). */
+export function formatDate(value: string | Date): string {
+  return date.format(typeof value === "string" ? new Date(value) : value);
+}

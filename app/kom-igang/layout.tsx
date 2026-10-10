@@ -6,7 +6,7 @@ export default function OnboardingLayout({ children }: LayoutProps<"/kom-igang">
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-5xl items-center px-4 py-3">
-          <Link href="/" className="font-semibold">
+          <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
             {APP_NAME}
           </Link>
         </div>

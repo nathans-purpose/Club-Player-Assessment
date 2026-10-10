@@ -1,4 +1,4 @@
-import { t } from "@/lib/i18n";
+import { t, te } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS, type SquadGroup } from "@/lib/players/squad-groups";
 import { POSITION_LABELS, POSITION_LEVEL_LABELS, type PositionCode, type PositionLevel } from "@/lib/positions";
 
@@ -9,6 +9,25 @@ import { POSITION_LABELS, POSITION_LEVEL_LABELS, type PositionCode, type Positio
  */
 export function overviewCopy({ screenFriendly = false }: { screenFriendly?: boolean } = {}) {
   return {
+    // Headings and texts the club's admins can rewrite in place.
+    editable: {
+      pitch: te("overview.pitch", "Planen"),
+      radar: te("overview.radar", "Laget och lagdelarna"),
+      facts: te("overview.facts", "Fakta"),
+      rankings: screenFriendly
+        ? te("overview.rankingsLowest", "Lag, bäst och lägst")
+        : te("overview.rankings", "Lag, bäst och svagast"),
+      rankingsHint: screenFriendly
+        ? te(
+            "overview.rankings.hintLowest",
+            "Lag visar alla spelare sorterade under Data. Bäst och Lägst visar spelarna.",
+          )
+        : te("overview.rankings.hint", "Lag visar alla spelare sorterade under Data. Bäst och Svagast visar spelarna."),
+      waitingBody: te(
+        "overview.waiting.body",
+        "Planen, radarn och topplistorna visas när fler bedömningar har kommit in, så att de inte ger en missvisande bild. Under Data finns det som har kommit in hittills.",
+      ),
+    },
     tabs: {
       label: t("overview.tabs", "Visa"),
       overview: t("overview.tab.overview", "Översikt"),
@@ -80,7 +99,10 @@ export function overviewCopy({ screenFriendly = false }: { screenFriendly?: bool
         ? t("overview.rankingsLowest", "Lag, bäst och lägst")
         : t("overview.rankings", "Lag, bäst och svagast"),
       hint: screenFriendly
-        ? t("overview.rankings.hintLowest", "Lag visar alla spelare sorterade under Data. Bäst och Lägst visar spelarna.")
+        ? t(
+            "overview.rankings.hintLowest",
+            "Lag visar alla spelare sorterade under Data. Bäst och Lägst visar spelarna.",
+          )
         : t("overview.rankings.hint", "Lag visar alla spelare sorterade under Data. Bäst och Svagast visar spelarna."),
       rateNote: t(
         "overview.rankings.rateNote",

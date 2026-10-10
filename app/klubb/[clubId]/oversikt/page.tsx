@@ -12,7 +12,8 @@ import {
   toCalcAssessment,
 } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { buildOverview } from "@/lib/overview";
 import { overviewCopy } from "./copy";
 import { OverviewView } from "./overview-view";
@@ -40,10 +41,12 @@ async function Overview({ params, searchParams }: PageProps<"/klubb/[clubId]/ove
   if (!team || !season) {
     return (
       <>
-        <h1 className="text-2xl font-bold">{t("overview.title", "Översikt")}</h1>
-        <p className="rounded-lg border border-border bg-surface p-4">
-          {t("players.noSeason", "Laget har ingen aktiv säsong ännu.")}
-        </p>
+        <EditableText as="h1" className="text-2xl font-bold" {...te("overview.title", "Översikt")} />
+        <EditableText
+          as="p"
+          className="rounded-lg border border-border bg-surface p-4"
+          {...te("players.noSeason", "Laget har ingen aktiv säsong ännu.")}
+        />
       </>
     );
   }
@@ -93,7 +96,7 @@ async function Overview({ params, searchParams }: PageProps<"/klubb/[clubId]/ove
       clubId={clubId}
       heading={{
         kicker: [club.name, team.name, season.label].join(" · "),
-        title: t("overview.title", "Översikt"),
+        title: te("overview.title", "Översikt"),
       }}
       overview={overview}
       submittedByMe={mine}

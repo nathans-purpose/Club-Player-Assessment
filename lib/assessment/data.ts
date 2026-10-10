@@ -1,6 +1,7 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
+import { setRequestTexts } from "@/lib/i18n";
 import type { Assessment, AttendanceValue, Category } from "@/lib/calc";
 import type { SquadGroup } from "@/lib/players/squad-groups";
 import type { PositionCode, PositionLevel } from "@/lib/positions";
@@ -20,14 +21,21 @@ export type ClubContext = {
   userId: string;
   role: "admin" | "leader";
   club: { id: string; name: string; crestUrl: string | null; anonymousLeaderView: boolean; screenFriendly: boolean };
-  team: { id: string; name: string; gameFormat: number } | null;
+  team: {
+    id: string;
+    name: string;
+    gameFormat: number;
+    hasMinors: boolean;
+    guardianInfoConfirmedAt: string | null;
+  } | null;
   season: { id: string; label: string } | null;
 };
 
 /**
  * The signed-in user's view of a club: their role, the club's first team and
  * its active season. Null when signed out or not a member. Cached per request,
- * since the layout's header and the page both need it.
+ * since the layout's header and the page both need it. Also puts the club's
+ * text overrides in place, so every `t()` after this uses them.
  */
 export const loadClubContext = cache(async (clubId: string): Promise<ClubContext | null> => {
   if (!isUuid(clubId)) return null;
@@ -36,7 +44,7 @@ export const loadClubContext = cache(async (clubId: string): Promise<ClubContext
   const userId = claims?.claims?.sub;
   if (!userId) return null;
 
-  const [{ data: membership }, { data: club }, { data: team }] = await Promise.all([
+  const [{ data: membership }, { data: club }, { data: team }, { data: texts }] = await Promise.all([
     supabase.from("club_members").select("role").eq("club_id", clubId).eq("user_id", userId).maybeSingle(),
     supabase
       .from("clubs")
@@ -45,13 +53,15 @@ export const loadClubContext = cache(async (clubId: string): Promise<ClubContext
       .maybeSingle(),
     supabase
       .from("teams")
-      .select("id, name, game_format")
+      .select("id, name, game_format, has_minors, guardian_info_confirmed_at")
       .eq("club_id", clubId)
       .order("created_at")
       .limit(1)
       .maybeSingle(),
+    supabase.from("ui_text_overrides").select("key, value").eq("club_id", clubId),
   ]);
   if (!membership || !club) return null;
+  setRequestTexts(Object.fromEntries((texts ?? []).map((row) => [row.key as string, row.value as string])));
 
   const { data: season } = team
     ? await supabase.from("seasons").select("id, label").eq("team_id", team.id).eq("is_active", true).maybeSingle()
@@ -68,7 +78,15 @@ export const loadClubContext = cache(async (clubId: string): Promise<ClubContext
       anonymousLeaderView: club.anonymous_leader_view,
       screenFriendly: club.screen_friendly,
     },
-    team: team ? { id: team.id, name: team.name, gameFormat: team.game_format } : null,
+    team: team
+      ? {
+          id: team.id,
+          name: team.name,
+          gameFormat: team.game_format,
+          hasMinors: team.has_minors,
+          guardianInfoConfirmedAt: team.guardian_info_confirmed_at,
+        }
+      : null,
     season,
   };
 });
@@ -205,7 +223,11 @@ export function toCalcAssessment(row: AssessmentRow): Assessment {
   return {
     leaderId: row.leader_id,
     status: row.status,
-    scores: row.assessment_scores.map((s) => ({ categoryId: s.category_id, subcategoryId: s.subcategory_id, score: s.score })),
+    scores: row.assessment_scores.map((s) => ({
+      categoryId: s.category_id,
+      subcategoryId: s.subcategory_id,
+      score: s.score,
+    })),
     positions: row.assessment_positions.map((p) => ({
       code: p.position_code as PositionCode,
       level: p.level as PositionLevel,

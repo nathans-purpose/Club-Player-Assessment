@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseEnv } from "./env";
 
 // Paths reachable without signing in, with everything below them.
-const PUBLIC_PATHS = ["/logga-in", "/auth"];
+const PUBLIC_PATHS = ["/logga-in", "/auth", "/integritet", "/villkor"];
 // Reachable without signing in, but not their sub-paths (Kom igång 1 is the
 // sign-up step; the later steps need an account).
 const PUBLIC_EXACT_PATHS = ["/kom-igang"];
