@@ -26,6 +26,11 @@ async function Settings({ params }: Pick<PageProps<"/klubb/[clubId]/installninga
   const base = `/klubb/${clubId}/installningar`;
   const pages = [
     {
+      href: `${base}/visuell-identitet`,
+      title: t("settings.identity", "Visuell identitet"),
+      body: t("settings.identityBody", "Klubbens färger, loggor och typsnitt, inlästa från den grafiska profilen."),
+    },
+    {
       href: `${base}/kategorier`,
       title: t("settings.categories", "Bedömningskategorier"),
       body: t("settings.categoriesBody", "Vad ledarna betygsätter, med frågor och underkategorier."),
@@ -54,7 +59,7 @@ async function Settings({ params }: Pick<PageProps<"/klubb/[clubId]/installninga
           <li key={p.href}>
             <Link
               href={p.href}
-              className="flex h-full min-h-11 flex-col gap-1 rounded-lg border border-border bg-surface p-4 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+              className="flex h-full min-h-11 flex-col gap-1 rounded-lg border border-border bg-surface p-4 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
             >
               <span className="font-semibold">{p.title}</span>
               <span className="text-sm text-muted">{p.body}</span>

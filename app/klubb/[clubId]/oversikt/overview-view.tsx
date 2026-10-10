@@ -94,8 +94,8 @@ export function OverviewView({
             tabIndex={tab === id ? 0 : -1}
             onClick={() => selectTab(id)}
             onKeyDown={onTabKeyDown}
-            className={`-mb-px min-h-11 border-b-2 px-4 font-semibold focus-visible:outline-2 focus-visible:outline-primary ${
-              tab === id ? "border-primary text-primary" : "border-transparent text-muted hover:text-foreground"
+            className={`-mb-px min-h-11 border-b-2 px-4 font-semibold focus-visible:outline-2 focus-visible:outline-primary-ink ${
+              tab === id ? "border-primary text-primary-ink" : "border-transparent text-muted hover:text-foreground"
             }`}
           >
             {copy.tabs[id]}
@@ -132,7 +132,7 @@ export function OverviewView({
             <button
               type="button"
               onClick={() => selectTab("data")}
-              className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-border px-4 font-semibold hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+              className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-border px-4 font-semibold hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
             >
               {copy.waiting.toData}
             </button>

@@ -34,7 +34,7 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
         <input type="hidden" name="next" value={next} />
         <button
           type="submit"
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         >
           <GoogleIcon />
           {copy.google}
@@ -62,7 +62,7 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
           placeholder={copy.emailPlaceholder}
           aria-invalid={state.status === "error"}
           aria-describedby={state.status === "error" ? "email-error" : undefined}
-          className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         />
         {state.status === "error" && (
           <p id="email-error" role="alert" className="text-sm text-danger">
@@ -72,7 +72,7 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
         <button
           type="submit"
           disabled={pending}
-          className="mt-2 min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="mt-2 min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         >
           {pending ? copy.sending : copy.sendLink}
         </button>

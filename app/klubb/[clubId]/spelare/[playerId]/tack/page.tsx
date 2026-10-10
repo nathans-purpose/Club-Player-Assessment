@@ -60,7 +60,7 @@ async function ThankYou({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
       {next ? (
         <Link
           href={`${base}/${next.id}`}
-          className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 text-lg font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-5 text-lg font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         >
           {t("thanks.next", "Nästa spelare →")}
           <span className="sr-only">: {next.fullName}</span>

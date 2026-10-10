@@ -50,7 +50,7 @@ export function RadarCard({ overview, copy }: { overview: Overview; copy: Overvi
             id={selectId}
             value={group}
             onChange={(e) => setGroup(e.target.value as SquadGroup)}
-            className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-primary"
+            className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-primary-ink"
           >
             {SQUAD_GROUPS.map((g) => (
               <option key={g} value={g}>

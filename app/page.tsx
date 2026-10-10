@@ -17,7 +17,7 @@ export default function HomePage() {
           <form action={signOut}>
             <button
               type="submit"
-              className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+              className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
             >
               {t("nav.signOut", "Logga ut")}
             </button>

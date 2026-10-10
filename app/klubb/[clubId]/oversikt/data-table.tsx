@@ -12,7 +12,7 @@ type Column =
   | { key: MetricKey; label: string; metric: true };
 
 const SELECT =
-  "min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-primary";
+  "min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-primary-ink";
 
 /**
  * The Data tab: every player in a sortable table. The sorted column is
@@ -104,7 +104,7 @@ export function DataTable({
         <button
           type="button"
           onClick={() => onSort({ ...sort, descending: !sort.descending })}
-          className="min-h-11 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+          className="min-h-11 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
         >
           {sort.descending ? `↓ ${copy.table.descending}` : `↑ ${copy.table.ascending}`}
         </button>
@@ -144,13 +144,13 @@ export function DataTable({
                     aria-sort={active ? (sort.descending ? "descending" : "ascending") : undefined}
                     className={`whitespace-nowrap px-2 py-1 text-left align-bottom font-medium ${
                       c.key === "name" ? "sticky left-0 z-10 bg-surface" : ""
-                    } ${active ? "bg-primary/15 text-primary" : "text-muted"}`}
+                    } ${active ? "bg-primary/15 text-primary-ink" : "text-muted"}`}
                   >
                     {key ? (
                       <button
                         type="button"
                         onClick={() => sortBy(key)}
-                        className="inline-flex min-h-11 items-center gap-1 font-medium hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+                        className="inline-flex min-h-11 items-center gap-1 font-medium hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary-ink"
                       >
                         {c.label}
                         {active && <span aria-hidden="true">{sort.descending ? "↓" : "↑"}</span>}
@@ -193,7 +193,7 @@ export function DataTable({
                         <button
                           type="button"
                           onClick={() => onOpenPlayer(p.id)}
-                          className="min-h-11 whitespace-nowrap text-left font-semibold underline decoration-border underline-offset-2 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-primary"
+                          className="min-h-11 whitespace-nowrap text-left font-semibold underline decoration-border underline-offset-2 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-primary-ink"
                         >
                           {p.fullName}
                         </button>

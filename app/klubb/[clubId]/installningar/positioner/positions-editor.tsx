@@ -19,7 +19,7 @@ import type { PositionsCopy } from "./page";
 const UNDO_MS = 5000;
 
 const smallButton =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-border text-lg font-semibold hover:bg-surface-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary";
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-border text-lg font-semibold hover:bg-surface-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary-ink";
 
 const key = (targets: Targets) => JSON.stringify(POSITION_CODES.map((code) => targets[code] ?? null));
 
@@ -143,7 +143,7 @@ export function PositionsEditor({
                   type="button"
                   aria-pressed={active?.id === preset.id}
                   onClick={() => applyPreset(preset)}
-                  className={`flex min-h-11 flex-col items-start justify-center rounded-lg border px-3 py-1 text-left focus-visible:outline-2 focus-visible:outline-primary ${
+                  className={`flex min-h-11 flex-col items-start justify-center rounded-lg border px-3 py-1 text-left focus-visible:outline-2 focus-visible:outline-primary-ink ${
                     active?.id === preset.id
                       ? "border-primary bg-primary/10"
                       : "border-border bg-surface hover:bg-surface-muted"
@@ -216,7 +216,7 @@ export function PositionsEditor({
                           const n = Number(e.target.value);
                           if (e.target.value !== "" && Number.isFinite(n)) change(setTarget(targets, code, n));
                         }}
-                        className="min-h-11 w-14 rounded-lg border border-border bg-surface text-center focus-visible:outline-2 focus-visible:outline-primary"
+                        className="min-h-11 w-14 rounded-lg border border-border bg-surface text-center focus-visible:outline-2 focus-visible:outline-primary-ink"
                       />
                       <button
                         type="button"

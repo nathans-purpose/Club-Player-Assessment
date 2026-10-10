@@ -30,7 +30,7 @@ export type ClubFormCopy = Record<
 >;
 
 const inputClass =
-  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-invalid:border-danger";
+  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink aria-invalid:border-danger";
 
 export function ClubForm({ copy }: { copy: ClubFormCopy }) {
   const [state, formAction, pending] = useActionState<ClubFormState, FormData>(createClub, { status: "idle" });
@@ -125,7 +125,7 @@ export function ClubForm({ copy }: { copy: ClubFormCopy }) {
             {GAME_FORMATS.map((n) => (
               <label
                 key={n}
-                className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 has-checked:border-primary has-checked:bg-primary/10 has-checked:font-semibold has-focus-visible:outline-2 has-focus-visible:outline-primary"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 has-checked:border-primary has-checked:bg-primary/10 has-checked:font-semibold has-focus-visible:outline-2 has-focus-visible:outline-primary-ink"
               >
                 <input
                   type="radio"
@@ -151,7 +151,7 @@ export function ClubForm({ copy }: { copy: ClubFormCopy }) {
             {(["ja", "nej"] as const).map((value) => (
               <label
                 key={value}
-                className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 has-checked:border-primary has-checked:bg-primary/10 has-checked:font-semibold has-focus-visible:outline-2 has-focus-visible:outline-primary"
+                className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 has-checked:border-primary has-checked:bg-primary/10 has-checked:font-semibold has-focus-visible:outline-2 has-focus-visible:outline-primary-ink"
               >
                 <input
                   type="radio"
@@ -197,7 +197,7 @@ export function ClubForm({ copy }: { copy: ClubFormCopy }) {
         <button
           type="submit"
           disabled={pending}
-          className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:self-start"
+          className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink sm:self-start"
         >
           {pending ? copy.submitting : copy.submit}
         </button>

@@ -67,7 +67,7 @@ const STATUS_CLASS: Record<ReviewStatus, string> = {
 };
 
 const inputClass =
-  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink";
 
 let nextKey = 1;
 const emptyRow = (): Row => ({ key: nextKey++, shirtNumber: "", fullName: "", squadGroup: "" });
@@ -214,7 +214,7 @@ export function PlayersEditor({
           value={paste}
           onChange={(e) => setPaste(e.target.value)}
           aria-describedby="paste-hint"
-          className="mt-3 w-full rounded-lg border border-border bg-surface p-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="mt-3 w-full rounded-lg border border-border bg-surface p-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         />
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <button
@@ -429,7 +429,7 @@ export function PlayersEditor({
           <button
             type="submit"
             disabled={pending}
-            className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
           >
             {pending ? copy.saving : copy.save.replace("{count}", String(filled))}
           </button>

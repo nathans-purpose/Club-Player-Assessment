@@ -31,7 +31,7 @@ export function CopyButton({
     <button
       type="button"
       onClick={copy}
-      className={`min-h-11 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${className}`}
+      className={`min-h-11 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink ${className}`}
     >
       <span aria-live="polite">{copied ? copiedLabel : label}</span>
     </button>

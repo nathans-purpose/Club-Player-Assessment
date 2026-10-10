@@ -109,7 +109,7 @@ export function TeamPitch({
             type="button"
             aria-pressed={metric === m.id}
             onClick={() => setMetric(m.id)}
-            className={`min-h-11 rounded-full border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            className={`min-h-11 rounded-full border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink ${
               metric === m.id ? "border-primary bg-primary text-on-primary" : "border-border hover:bg-surface-muted"
             }`}
           >
@@ -199,7 +199,7 @@ export function TeamPitch({
                   <button
                     type="button"
                     onClick={() => close(spot.code)}
-                    className="-mr-1 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+                    className="-mr-1 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
                   >
                     <span aria-hidden="true">✕</span>
                     <span className="sr-only">{copy.pitch.close}</span>
@@ -218,7 +218,7 @@ export function TeamPitch({
                         <button
                           type="button"
                           onClick={() => onOpenPlayer(id, playerMetric)}
-                          className={`flex min-h-11 w-full items-center gap-2 rounded px-1 text-left hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary ${
+                          className={`flex min-h-11 w-full items-center gap-2 rounded px-1 text-left hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink ${
                             player.fewAssessments ? "text-muted" : ""
                           }`}
                         >

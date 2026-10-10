@@ -12,8 +12,8 @@ secrets.** The seed data is made up.
 ## Stack
 
 - Next.js (App Router, TypeScript, Server Actions), deployed on Vercel
-- Supabase: Postgres, Auth (magic link + Google), Storage (club crests, player list uploads), Row Level Security
-- Anthropic API (Claude) for reading uploaded player lists, server-side only
+- Supabase: Postgres, Auth (magic link + Google), Storage (club crests, player list and brand document uploads, logos and fonts), Row Level Security
+- Anthropic API (Claude) for reading uploaded player lists and brand documents, server-side only
 - Tailwind CSS with CSS variables for all theme tokens (`app/globals.css`)
 - Vitest (unit and RLS tests), Playwright (end-to-end)
 
@@ -78,13 +78,14 @@ app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 
 app/inbjudan/[token]    accept an invite
 app/klubb/[clubId]/spelare  Spelarkort: player list, form (autosave), thank-you (/tack), combined view (/samlad)
 app/klubb/[clubId]/oversikt Översikt: tabs Översikt and Data (?flik=data), pitch, radar, Fakta, rankings, quick view
-app/klubb/[clubId]/installningar Inställningar: kategorier, positioner, sa-raknas-det and the club's display options
+app/klubb/[clubId]/installningar Inställningar: visuell-identitet, kategorier, positioner, sa-raknas-det and display options
 lib/calc.ts             all calculation rules (spec §5), the single source of truth
 lib/overview.ts         builds everything Översikt shows from the rows, using calc.ts
 lib/assessment/         form state, completeness and payload checks; server-side data loading
 lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
 lib/settings/           checks and helpers for the settings pages (categories, positions, presets)
+lib/identity/           visual identity: contrast, theme tokens, brand document reading, logo cut-out
 lib/players/            paste parsing and review-table statuses for the squad list
 lib/players/import/     file import: accepted types, file-to-text conversion, the Claude call and its schema
 lib/supabase/           server, browser and proxy clients
@@ -170,7 +171,44 @@ see *Så räknas det*, and the admin pages answer 404 for them.
   show), and *Skärmvänligt läge* says "Lägst" instead of "Svagast" in
   Översikt, for showing it on a big screen.
 
-Visual identity comes in a later step.
+## Visuell identitet
+
+Admins set the club's look at *Visuell identitet*
+(`/installningar/visuell-identitet`). Nothing changes for the club until they
+press *Spara och använd för hela klubben*; *Sluta använda klubbens tema* goes
+back to the default look and keeps what was saved.
+
+- **Brand document import.** A PDF, PowerPoint (.pptx), Keynote (.key) or
+  picture, up to 50 MB. The browser turns it into at most 8 images (PDF pages
+  drawn with PDF.js, the pictures inside a presentation, Keynote's slide
+  preview) plus hints (a .pptx file's theme colours, fonts and slide text, a
+  PDF's font names). The images go to the private `brand-imports` bucket,
+  `readBrandDocument` sends them to Claude, which returns colours with roles,
+  fonts, tone words and boxes around the logos, and the images are deleted
+  right after. The browser cuts the logos out of its own copies and makes a
+  plain background transparent (PNG). Older .ppt files and Keynote '09
+  bundles are not supported. Without `ANTHROPIC_API_KEY` everything can be
+  entered by hand.
+- **Contrast check.** If the main colour is below 4.5:1 on white, a darker
+  variant of the same hue is used for text, links and focus rings
+  (`--primary-ink`), buttons in the main colour get dark text, and the page
+  explains this to the admin (e.g. `#509BF5` → `#2971C8`).
+- **Fonts.** Licensed fonts are not bundled. Until the admin uploads a font
+  file (woff2, woff, otf or ttf, max 5 MB), a bundled fallback with a
+  matching width is used: Geist, Georgia, or Archivo condensed or expanded.
+- **Theming.** `lib/identity/theme.ts` turns the identity into CSS variables
+  (`--primary`, `--primary-ink`, `--on-primary`, `--brand-stripe`,
+  `--font-heading`, `--font-body`) that the club layout writes into a
+  `<style>` element. The assessment colour scale, the pitch and the page
+  background are the same for every club. Stored values are checked again
+  when read (hex colours only, font names without quotes, files only in the
+  club's own folder), so a hand-written row cannot inject CSS.
+- **Files.** Logos and font files are in the public `club-assets` bucket under
+  `<club_id>/logos/` and `<club_id>/fonts/` (random file names, no SVG), so
+  every member's browser can load them; files the identity no longer uses are
+  deleted on save. Only the club's admins can write there. A font file in a
+  public bucket can be downloaded by anyone who has its address, as on any
+  website that uses web fonts, so only upload fonts licensed for the web.
 
 ## Onboarding and invites
 

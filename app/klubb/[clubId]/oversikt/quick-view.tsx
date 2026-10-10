@@ -75,7 +75,7 @@ export function QuickView({
             <form method="dialog">
               <button
                 type="submit"
-                className="flex size-11 items-center justify-center rounded-lg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+                className="flex size-11 items-center justify-center rounded-lg hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
               >
                 <span aria-hidden="true">✕</span>
                 <span className="sr-only">{copy.player.close}</span>

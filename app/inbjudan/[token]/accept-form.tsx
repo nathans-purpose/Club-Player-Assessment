@@ -17,7 +17,7 @@ export function AcceptForm({ token, submit, submitting }: { token: string; submi
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
       >
         {pending ? submitting : submit}
       </button>
