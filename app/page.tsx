@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { APP_NAME } from "@/lib/config";
@@ -63,15 +64,30 @@ async function HomeContent() {
             {clubs.map((m) => (
               <li
                 key={m.clubs!.id}
-                className="flex min-h-11 items-center justify-between rounded-lg border border-border bg-surface px-4 py-3"
+                className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface px-4 py-3"
               >
                 <span className="font-medium">{m.clubs!.name}</span>
-                <span className="text-sm text-muted">
-                  {m.role === "admin" ? t("role.admin", "Admin") : t("role.leader", "Ledare")}
+                <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm">
+                  {m.role === "admin" && (
+                    <>
+                      <Link href={`/kom-igang/${m.clubs!.id}/spelare`} className="underline">
+                        {t("home.clubs.players", "Lägg till spelare")}
+                      </Link>
+                      <Link href={`/kom-igang/${m.clubs!.id}/ledare`} className="underline">
+                        {t("home.clubs.leaders", "Bjud in ledare")}
+                      </Link>
+                    </>
+                  )}
+                  <span className="text-muted">
+                    {m.role === "admin" ? t("role.admin", "Admin") : t("role.leader", "Ledare")}
+                  </span>
                 </span>
               </li>
             ))}
           </ul>
+          <Link href="/kom-igang/klubb" className="self-start text-sm font-medium underline">
+            {t("home.clubs.create", "Skapa en ny klubb")}
+          </Link>
         </section>
       ) : (
         <section className="rounded-lg border border-border bg-surface p-6">
@@ -82,6 +98,13 @@ async function HomeContent() {
               "Har du fått en inbjudan från din klubb? Öppna länken i inbjudan så kopplas ditt konto till klubben.",
             )}
           </p>
+          <p className="mt-4 text-muted">{t("home.noClub.create.body", "Vill du starta klubbens bedömningar?")}</p>
+          <Link
+            href="/kom-igang/klubb"
+            className="mt-2 inline-flex min-h-11 items-center rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90"
+          >
+            {t("home.noClub.create", "Skapa en klubb")}
+          </Link>
         </section>
       )}
     </>
