@@ -51,9 +51,18 @@ jobs:
           cache: npm
       - if: steps.secrets.outputs.ready == 'true'
         run: npm ci
-      - name: Link project
+      - name: Link project and push migrations
         if: steps.secrets.outputs.ready == 'true'
-        run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
-      - name: Push migrations
-        if: steps.secrets.outputs.ready == 'true'
-        run: npx supabase db push
+        run: |
+          # Secrets pasted in the GitHub UI often carry a trailing newline,
+          # which the CLI rejects. Trim surrounding whitespace.
+          trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; printf '%s' "${v%"${v##*[![:space:]]}"}"; }
+          export SUPABASE_ACCESS_TOKEN="$(trim "$SUPABASE_ACCESS_TOKEN")"
+          export SUPABASE_DB_PASSWORD="$(trim "$SUPABASE_DB_PASSWORD")"
+          SUPABASE_PROJECT_REF="$(trim "$SUPABASE_PROJECT_REF")"
+          case "$SUPABASE_ACCESS_TOKEN" in
+            sbp_*) ;;
+            *) echo "::error::SUPABASE_ACCESS_TOKEN must be a personal access token starting with sbp_ (Account preferences → Access Tokens)."; exit 1 ;;
+          esac
+          npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          npx supabase db push
