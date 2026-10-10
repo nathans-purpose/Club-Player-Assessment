@@ -12,3 +12,20 @@ export function formatScore(value: number | null): string {
 export function formatPercent(value: number | null): string {
   return value === null ? "–" : `${whole.format(value)} %`;
 }
+
+const rate = new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** 0.654 → "0,65 per match"; null → "–". Full words, never "/m". */
+export function formatRate(value: number | null): string {
+  return value === null ? "–" : `${rate.format(value)} per match`;
+}
+
+/** 0.654 → "0,65"; for table cells where the column header names the unit. */
+export function formatRateShort(value: number | null): string {
+  return value === null ? "–" : rate.format(value);
+}
+
+/** 12 → "12"; null → "–". */
+export function formatCount(value: number | null): string {
+  return value === null ? "–" : whole.format(value);
+}
