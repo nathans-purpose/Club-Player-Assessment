@@ -1,0 +1,7 @@
+<!-- Swedish magic_link email. Used by the local stack (config.toml); paste the same
+     subject and body into the hosted project under Authentication → Emails. -->
+<h2>Logga in</h2>
+<p>Klicka på knappen för att logga in. Länken fungerar en gång och går ut efter en timme.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;background:#14532d;color:#ffffff;text-decoration:none;border-radius:6px">Logga in</a></p>
+<p>Fungerar inte knappen? Kopiera den här adressen till webbläsaren:<br>{{ .ConfirmationURL }}</p>
+<p>Om du inte bad om det här kan du strunta i mejlet.</p>

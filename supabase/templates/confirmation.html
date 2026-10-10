@@ -1,0 +1,7 @@
+<!-- Swedish confirmation email. Used by the local stack (config.toml); paste the same
+     subject and body into the hosted project under Authentication → Emails. -->
+<h2>Välkommen</h2>
+<p>Klicka på knappen för att bekräfta din e-postadress och logga in. Länken fungerar en gång och går ut efter en timme.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;background:#14532d;color:#ffffff;text-decoration:none;border-radius:6px">Bekräfta och logga in</a></p>
+<p>Fungerar inte knappen? Kopiera den här adressen till webbläsaren:<br>{{ .ConfirmationURL }}</p>
+<p>Om du inte bad om det här kan du strunta i mejlet.</p>
