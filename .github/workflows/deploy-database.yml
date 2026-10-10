@@ -28,11 +28,19 @@ jobs:
       - name: Check secrets
         id: secrets
         run: |
-          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_PROJECT_REF" ]; then
-            echo "::notice::Supabase secrets are not set yet; skipping. See docs/drift-supabase.md."
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-          else
+          missing=""
+          [ -n "$SUPABASE_ACCESS_TOKEN" ] || missing="$missing SUPABASE_ACCESS_TOKEN"
+          [ -n "$SUPABASE_DB_PASSWORD" ] || missing="$missing SUPABASE_DB_PASSWORD"
+          [ -n "$SUPABASE_PROJECT_REF" ] || missing="$missing SUPABASE_PROJECT_REF"
+          if [ -z "$missing" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # Started by hand: someone expects a deploy, so say what is missing.
+            echo "::error::Missing repository secrets:$missing. See docs/drift-supabase.md."
+            exit 1
+          else
+            echo "::notice::Supabase secrets are not set yet (missing:$missing); skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/checkout@v4
         if: steps.secrets.outputs.ready == 'true'
