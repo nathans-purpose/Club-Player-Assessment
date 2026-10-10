@@ -76,7 +76,9 @@ app/auth/callback       magic link and Google sign-in landing point
 app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 leaders (/[clubId]/…)
 app/inbjudan/[token]    accept an invite
 app/klubb/[clubId]/spelare  Spelarkort: player list, form (autosave), thank-you (/tack), combined view (/samlad)
+app/klubb/[clubId]/oversikt Översikt: tabs Översikt and Data (?flik=data), pitch, radar, Fakta, rankings, quick view
 lib/calc.ts             all calculation rules (spec §5), the single source of truth
+lib/overview.ts         builds everything Översikt shows from the rows, using calc.ts
 lib/assessment/         form state, completeness and payload checks; server-side data loading
 lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
@@ -122,6 +124,21 @@ the combined view of a player only after submitting their own assessment.
 
 The pitch coordinates in `lib/positions.ts` are placeholders until they are
 matched to the design prototype.
+
+## Översikt
+
+`/klubb/[clubId]/oversikt` is open to every member and counts submitted
+assessments only. The *Översikt* tab shows KPI tiles, the team pitch (metric
+chips; hover, keyboard focus or a tap shows who can play a position), the
+radar (team against one squad group), *Fakta* and *Lag, bäst och svagast*.
+*Lag* opens the *Data* tab sorted by that metric; *Bäst* and *Svagast* open a
+quick-view dialog with every tied player. The *Data* tab is a sortable table
+with a squad-group filter; sorting by a phase makes the attendance column
+show that phase.
+
+Until a quarter of all possible assessments (players × members) are in, the
+charts are replaced by "Väntar på bedömningar (X av Y)". Match stats come from
+`player_season_stats`, which has no editing screen yet.
 
 ## Onboarding and invites
 

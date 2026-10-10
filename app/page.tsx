@@ -71,6 +71,9 @@ async function HomeContent() {
                   <Link href={`/klubb/${m.clubs!.id}/spelare`} className="font-semibold underline">
                     {t("home.clubs.assess", "Bedöm spelare")}
                   </Link>
+                  <Link href={`/klubb/${m.clubs!.id}/oversikt`} className="font-semibold underline">
+                    {t("home.clubs.overview", "Översikt")}
+                  </Link>
                   {m.role === "admin" && (
                     <>
                       <Link href={`/kom-igang/${m.clubs!.id}/spelare`} className="underline">
