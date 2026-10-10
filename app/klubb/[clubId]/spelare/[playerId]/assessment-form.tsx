@@ -57,7 +57,7 @@ const itemDomId = (id: string) => `item-${id}`;
 const choiceClass =
   "flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-surface px-2 text-center font-medium " +
   "hover:bg-surface-muted has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary " +
-  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary";
+  "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary-ink";
 
 export function AssessmentForm({
   clubId,
@@ -277,7 +277,7 @@ export function AssessmentForm({
           maxLength={MAX_COMMENT_LENGTH}
           rows={4}
           onChange={(e) => update((s) => ({ ...s, comment: e.target.value }))}
-          className="w-full rounded-lg border border-border bg-surface p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="w-full rounded-lg border border-border bg-surface p-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         />
       </Section>
 
@@ -306,7 +306,7 @@ export function AssessmentForm({
           <button
             type="submit"
             disabled={submitting}
-            className="min-h-11 shrink-0 rounded-lg bg-primary px-5 font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60"
+            className="min-h-11 shrink-0 rounded-lg bg-primary px-5 font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink disabled:opacity-60"
           >
             {submitting ? copy.submitting : submitted ? copy.resubmit : copy.submit}
           </button>
@@ -494,7 +494,7 @@ function PositionPicker({
                   onChange(open, level);
                   close();
                 }}
-                className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-left hover:bg-surface-muted aria-pressed:font-semibold focus-visible:outline-2 focus-visible:outline-primary"
+                className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-left hover:bg-surface-muted aria-pressed:font-semibold focus-visible:outline-2 focus-visible:outline-primary-ink"
               >
                 <span
                   aria-hidden="true"
@@ -511,7 +511,7 @@ function PositionPicker({
                   onChange(open, null);
                   close();
                 }}
-                className="min-h-11 rounded-lg px-2 text-left text-danger hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+                className="min-h-11 rounded-lg px-2 text-left text-danger hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
               >
                 {copy.remove}
               </button>
@@ -519,7 +519,7 @@ function PositionPicker({
               <button
                 type="button"
                 onClick={() => close()}
-                className="min-h-11 rounded-lg px-2 text-left text-muted hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary"
+                className="min-h-11 rounded-lg px-2 text-left text-muted hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
               >
                 {copy.close}
               </button>

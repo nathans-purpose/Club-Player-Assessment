@@ -25,7 +25,7 @@ type Copy = {
 const STATUS_CLASS: Record<PlayerListItem["status"], string> = {
   none: "border-border bg-surface-muted text-muted",
   draft: "border-scale-mid bg-scale-mid/20",
-  submitted: "border-primary/40 bg-primary/10 text-primary",
+  submitted: "border-primary/40 bg-primary/10 text-primary-ink",
 };
 
 function normalize(text: string) {
@@ -52,7 +52,7 @@ export function PlayerList({ clubId, players, copy }: { clubId: string; players:
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={copy.searchPlaceholder}
-          className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         />
       </div>
 
@@ -66,7 +66,7 @@ export function PlayerList({ clubId, players, copy }: { clubId: string; players:
             <li key={p.id} className="flex items-center gap-2 pr-2">
               <Link
                 href={`/klubb/${clubId}/spelare/${p.id}`}
-                className="flex min-h-14 flex-1 items-center gap-3 px-4 py-2 hover:bg-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                className="flex min-h-14 flex-1 items-center gap-3 px-4 py-2 hover:bg-surface-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-ink"
               >
                 <span className="w-8 shrink-0 text-right font-mono text-sm text-muted">{p.shirtNumber ?? "–"}</span>
                 <span className="flex min-w-0 flex-1 flex-col">

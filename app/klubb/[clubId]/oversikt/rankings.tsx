@@ -6,7 +6,7 @@ import type { OverviewCopy } from "./copy";
 import { formatMetric, metricKind, metricLabel } from "./metrics";
 
 const CHIP =
-  "flex min-h-14 min-w-0 flex-col items-start justify-center rounded-lg border px-2 py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "flex min-h-14 min-w-0 flex-col items-start justify-center rounded-lg border px-2 py-1 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink";
 
 /**
  * "Lag, bäst och svagast" (rule 11). Lag opens the Data tab sorted by the

@@ -1,5 +1,6 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 import type { Assessment, AttendanceValue, Category } from "@/lib/calc";
 import type { SquadGroup } from "@/lib/players/squad-groups";
 import type { PositionCode, PositionLevel } from "@/lib/positions";
@@ -18,16 +19,17 @@ export type ClubContext = {
   supabase: Supabase;
   userId: string;
   role: "admin" | "leader";
-  club: { id: string; name: string; anonymousLeaderView: boolean; screenFriendly: boolean };
+  club: { id: string; name: string; crestUrl: string | null; anonymousLeaderView: boolean; screenFriendly: boolean };
   team: { id: string; name: string; gameFormat: number } | null;
   season: { id: string; label: string } | null;
 };
 
 /**
  * The signed-in user's view of a club: their role, the club's first team and
- * its active season. Null when signed out or not a member.
+ * its active season. Null when signed out or not a member. Cached per request,
+ * since the layout's header and the page both need it.
  */
-export async function loadClubContext(clubId: string): Promise<ClubContext | null> {
+export const loadClubContext = cache(async (clubId: string): Promise<ClubContext | null> => {
   if (!isUuid(clubId)) return null;
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
@@ -38,7 +40,7 @@ export async function loadClubContext(clubId: string): Promise<ClubContext | nul
     supabase.from("club_members").select("role").eq("club_id", clubId).eq("user_id", userId).maybeSingle(),
     supabase
       .from("clubs")
-      .select("id, name, anonymous_leader_view, screen_friendly")
+      .select("id, name, crest_url, anonymous_leader_view, screen_friendly")
       .eq("id", clubId)
       .maybeSingle(),
     supabase
@@ -62,13 +64,14 @@ export async function loadClubContext(clubId: string): Promise<ClubContext | nul
     club: {
       id: club.id,
       name: club.name,
+      crestUrl: club.crest_url,
       anonymousLeaderView: club.anonymous_leader_view,
       screenFriendly: club.screen_friendly,
     },
     team: team ? { id: team.id, name: team.name, gameFormat: team.game_format } : null,
     season,
   };
-}
+});
 
 /**
  * For pages: signed-out visitors go to the login page; anyone who is not a

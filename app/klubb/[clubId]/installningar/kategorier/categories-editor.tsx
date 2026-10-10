@@ -18,9 +18,9 @@ import type { CategoriesCopy } from "./page";
 const UNDO_MS = 5000;
 
 const inputClass =
-  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink";
 const smallButton =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary";
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-muted disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary-ink";
 
 // Local rows carry a key for React and, while "Fördjupa" is off, the
 // subcategories the admin had typed, so switching it back on restores them.

@@ -25,7 +25,7 @@ type Copy = Record<
 type Row = { key: number; email: string; role: "leader" | "admin"; touched: boolean };
 
 const inputClass =
-  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-invalid:border-danger";
+  "min-h-11 w-full rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink aria-invalid:border-danger";
 
 let nextKey = 1;
 const emptyRow = (): Row => ({ key: nextKey++, email: "", role: "leader", touched: false });
@@ -166,7 +166,7 @@ export function LeadersForm({ clubId, copy }: { clubId: string; copy: Copy }) {
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 self-start rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="min-h-11 self-start rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
       >
         {pending ? copy.submitting : copy.submit}
       </button>

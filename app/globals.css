@@ -2,7 +2,8 @@
 
 /*
  * Theme tokens. Every colour and font the UI uses comes from these variables,
- * so a club's visual identity can override them at runtime.
+ * so a club's visual identity can override them at runtime (the brand tokens
+ * are set by lib/identity/theme.ts; the scale and pitch colours never change).
  */
 :root {
   --background: #f6f7f5;
@@ -12,7 +13,11 @@
   --border: #d6dad3;
   --muted: #5b6360;
   --primary: #1f5c3a;
+  /* Text, links and focus rings in the brand colour; darker than --primary when that is too light to read. */
+  --primary-ink: #1f5c3a;
   --on-primary: #ffffff;
+  /* The band along the top of the club's pages. */
+  --brand-stripe: var(--primary);
   --danger: #c62f34;
   /* Assessment colour scale (spec §5.9) */
   --scale-low: #e5484d;
@@ -21,6 +26,11 @@
   /* Pitch */
   --pitch: #2f7d4a;
   --pitch-line: rgba(255, 255, 255, 0.55);
+  /* Fonts: a club's own (uploaded) fonts, or a bundled fallback with a width. */
+  --font-body: var(--font-geist-sans), system-ui, sans-serif;
+  --body-stretch: normal;
+  --font-heading: var(--font-geist-sans), system-ui, sans-serif;
+  --heading-stretch: normal;
 }
 
 @theme inline {
@@ -31,17 +41,27 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --color-on-primary: var(--on-primary);
   --color-danger: var(--danger);
   --color-scale-low: var(--scale-low);
   --color-scale-mid: var(--scale-mid);
   --color-scale-high: var(--scale-high);
   --color-pitch: var(--pitch);
-  --font-sans: var(--font-geist-sans);
+  --color-brand-stripe: var(--brand-stripe);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-stretch: var(--body-stretch);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-stretch: var(--heading-stretch);
 }

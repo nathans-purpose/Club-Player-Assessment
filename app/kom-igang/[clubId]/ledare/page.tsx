@@ -243,7 +243,9 @@ async function LeadersStep({ params }: Pick<PageProps<"/kom-igang/[clubId]/ledar
           </p>
           <ul className="mt-3 flex flex-col gap-3 text-sm">
             <li>
-              <p className="font-medium">{t("onboarding.next.identity", "Visuell identitet")}</p>
+              <Link href={`/klubb/${clubId}/installningar/visuell-identitet`} className="font-medium underline">
+                {t("onboarding.next.identity", "Visuell identitet")}
+              </Link>
               <p className="text-muted">{t("onboarding.next.identityBody", "Klubbens färger, typsnitt och logga.")}</p>
             </li>
             <li>

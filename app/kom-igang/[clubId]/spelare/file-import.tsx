@@ -91,7 +91,7 @@ export function FileImport({
           onClick={() => inputRef.current?.click()}
           disabled={reading}
           aria-describedby="upload-hint"
-          className="min-h-11 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="min-h-11 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         >
           {hasImported ? copy.chooseMore : copy.choose}
         </button>

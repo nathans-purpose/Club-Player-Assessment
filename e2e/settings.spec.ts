@@ -122,7 +122,7 @@ test("a leader reads Så räknas det but cannot open the admin settings", async 
   await expectNoHorizontalScroll(page);
 
   const base = page.url().replace(/\/sa-raknas-det$/, "");
-  for (const path of ["/kategorier", "/positioner"]) {
+  for (const path of ["/kategorier", "/positioner", "/visuell-identitet"]) {
     // The page streams, so the 404 shows as the not-found page.
     await page.goto(`${base}${path}`);
     await expect(page.getByRole("heading", { name: "Sidan hittades inte" })).toBeVisible();

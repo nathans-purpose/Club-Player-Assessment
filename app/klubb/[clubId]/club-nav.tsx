@@ -18,8 +18,8 @@ export function ClubNav({ links, label }: { links: { path: string; label: string
               key={link.path}
               href={href}
               aria-current={current ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary ${
-                current ? "bg-surface-muted text-primary" : ""
+              className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink ${
+                current ? "bg-surface-muted text-primary-ink" : ""
               }`}
             >
               {link.label}
