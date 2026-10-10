@@ -30,6 +30,37 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+  db-push:
+    # Production gets its schema through `supabase db push` (deploy-database.yml),
+    # which runs as the postgres role on an empty database. This repeats that
+    # against a fresh local stack so a migration that only works locally fails here.
+    name: Migrations apply with db push
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID: ci-placeholder
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start an empty Supabase stack
+        run: |
+          mkdir -p "$RUNNER_TEMP/empty/supabase"
+          sed -e 's/^project_id = .*/project_id = "empty"/' -e 's/^sql_paths = .*/sql_paths = []/' supabase/config.toml > "$RUNNER_TEMP/empty/supabase/config.toml"
+          cp -r supabase/templates "$RUNNER_TEMP/empty/supabase/"
+          cd "$RUNNER_TEMP/empty"
+          "$GITHUB_WORKSPACE/node_modules/.bin/supabase" start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor
+      - name: Push migrations
+        run: npx supabase db push --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      - name: Check storage buckets
+        run: |
+          buckets="$(docker exec supabase_db_empty psql -U postgres -tAc "select string_agg(id, ',' order by id) from storage.buckets")"
+          echo "$buckets"
+          test "$buckets" = "brand-imports,club-assets,club-crests,player-imports"
+
   e2e:
     name: End-to-end (local Supabase)
     runs-on: ubuntu-latest

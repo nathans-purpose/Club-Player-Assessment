@@ -52,6 +52,13 @@ Google sign-in locally needs a Google OAuth client; set
 in your shell before `supabase start`, with
 `http://127.0.0.1:54321/auth/v1/callback` as the authorized redirect URI.
 
+## Production
+
+`docs/drift-supabase.md` (Swedish) walks through setting up the hosted Supabase
+project. The **Deploy database** workflow pushes new migrations to it when they
+reach `main`; CI checks that the migrations apply with `supabase db push` on an
+empty database.
+
 ## Tests
 
 ```bash
