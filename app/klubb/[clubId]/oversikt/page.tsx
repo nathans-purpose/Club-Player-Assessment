@@ -98,7 +98,7 @@ async function Overview({ params, searchParams }: PageProps<"/klubb/[clubId]/ove
       overview={overview}
       submittedByMe={mine}
       initialTab={flik === "data" ? "data" : "overview"}
-      copy={overviewCopy()}
+      copy={overviewCopy({ screenFriendly: club.screenFriendly })}
     />
   );
 }

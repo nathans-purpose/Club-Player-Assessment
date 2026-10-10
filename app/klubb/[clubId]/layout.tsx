@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { loadClubContext } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
 import { t } from "@/lib/i18n";
 import { signOut } from "../../logga-in/actions";
 import { ClubNav } from "./club-nav";
 
-export default function ClubLayout({ children }: LayoutProps<"/klubb/[clubId]">) {
+export default function ClubLayout({ children, params }: LayoutProps<"/klubb/[clubId]">) {
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-b border-border bg-surface">
@@ -13,16 +14,10 @@ export default function ClubLayout({ children }: LayoutProps<"/klubb/[clubId]">)
           <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
             {APP_NAME}
           </Link>
-          <div className="flex items-center gap-1">
-            {/* Reads the URL, so it streams in after the static shell. */}
+          <div className="flex flex-wrap items-center gap-1">
+            {/* Reads the URL and the user's role, so it streams in after the static shell. */}
             <Suspense fallback={null}>
-              <ClubNav
-                links={[
-                  { path: "spelare", label: t("nav.assess", "Bedöm spelare") },
-                  { path: "oversikt", label: t("nav.overview", "Översikt") },
-                ]}
-                label={t("nav.club", "Klubbens sidor")}
-              />
+              <Nav params={params} />
             </Suspense>
             <form action={signOut}>
               <button
@@ -37,5 +32,28 @@ export default function ClubLayout({ children }: LayoutProps<"/klubb/[clubId]">)
       </header>
       {children}
     </div>
+  );
+}
+
+/**
+ * Admins get Inställningar; leaders only see Så räknas det, the one settings
+ * page that is open to them.
+ */
+async function Nav({ params }: Pick<LayoutProps<"/klubb/[clubId]">, "params">) {
+  const { clubId } = await params;
+  const context = await loadClubContext(clubId);
+  return (
+    <ClubNav
+      links={[
+        { path: "spelare", label: t("nav.assess", "Bedöm spelare") },
+        { path: "oversikt", label: t("nav.overview", "Översikt") },
+        ...(context?.role === "admin"
+          ? [{ path: "installningar", label: t("nav.settings", "Inställningar") }]
+          : context
+            ? [{ path: "installningar/sa-raknas-det", label: t("nav.howItWorks", "Så räknas det") }]
+            : []),
+      ]}
+      label={t("nav.club", "Klubbens sidor")}
+    />
   );
 }

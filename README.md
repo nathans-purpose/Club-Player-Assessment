@@ -78,11 +78,13 @@ app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 
 app/inbjudan/[token]    accept an invite
 app/klubb/[clubId]/spelare  Spelarkort: player list, form (autosave), thank-you (/tack), combined view (/samlad)
 app/klubb/[clubId]/oversikt Översikt: tabs Översikt and Data (?flik=data), pitch, radar, Fakta, rankings, quick view
+app/klubb/[clubId]/installningar Inställningar: kategorier, positioner, sa-raknas-det and the club's display options
 lib/calc.ts             all calculation rules (spec §5), the single source of truth
 lib/overview.ts         builds everything Översikt shows from the rows, using calc.ts
 lib/assessment/         form state, completeness and payload checks; server-side data loading
 lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
+lib/settings/           checks and helpers for the settings pages (categories, positions, presets)
 lib/players/            paste parsing and review-table statuses for the squad list
 lib/players/import/     file import: accepted types, file-to-text conversion, the Claude call and its schema
 lib/supabase/           server, browser and proxy clients
@@ -141,6 +143,34 @@ show that phase.
 Until a quarter of all possible assessments (players × members) are in, the
 charts are replaced by "Väntar på bedömningar (X av Y)". Match stats come from
 `player_season_stats`, which has no editing screen yet.
+
+## Inställningar
+
+Admins reach the settings from *Inställningar* in the club menu; leaders only
+see *Så räknas det*, and the admin pages answer 404 for them.
+
+- **Bedömningskategorier** (`/installningar/kategorier`): add, rename,
+  reorder, set the question and *Fördjupa* with subcategories. Removing a
+  category can be undone for 5 seconds, and nothing is stored until *Spara
+  ändringar*. Saving goes through `save_categories(…)` in one transaction:
+  categories and subcategories that were left out are deactivated, never
+  deleted, so scores already given stay in the history, and a removed
+  category can be restored. A summary shows ratings per player and the
+  estimated time, with a warning above 16 ratings.
+- **Positioner på planen** (`/installningar/positioner`): tap positions on the
+  pitch to show or hide them, set how many players the team needs on each, or
+  pick a formation (4-4-2, 4-3-3, 4-2-3-1, 3-5-2, 7 mot 7). A formation
+  replaces the positions and can be undone for 5 seconds. Saved through
+  `save_position_targets(…)`. The positions have two centre-back spots, so the
+  third centre-back in 3-5-2 counts on Vänster mittback.
+- **Så räknas det** (`/installningar/sa-raknas-det`, every member): the rules
+  in `lib/calc.ts` in plain Swedish, with the thresholds read from the code.
+- **Visning** (on the settings page): *Anonym ledarvy* hides who gave which
+  score in the combined view (only averages, spread and unsigned comments
+  show), and *Skärmvänligt läge* says "Lägst" instead of "Svagast" in
+  Översikt, for showing it on a big screen.
+
+Visual identity comes in a later step.
 
 ## Onboarding and invites
 

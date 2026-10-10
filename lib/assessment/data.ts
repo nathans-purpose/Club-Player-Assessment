@@ -18,8 +18,8 @@ export type ClubContext = {
   supabase: Supabase;
   userId: string;
   role: "admin" | "leader";
-  club: { id: string; name: string };
-  team: { id: string; name: string } | null;
+  club: { id: string; name: string; anonymousLeaderView: boolean; screenFriendly: boolean };
+  team: { id: string; name: string; gameFormat: number } | null;
   season: { id: string; label: string } | null;
 };
 
@@ -36,8 +36,18 @@ export async function loadClubContext(clubId: string): Promise<ClubContext | nul
 
   const [{ data: membership }, { data: club }, { data: team }] = await Promise.all([
     supabase.from("club_members").select("role").eq("club_id", clubId).eq("user_id", userId).maybeSingle(),
-    supabase.from("clubs").select("id, name").eq("id", clubId).maybeSingle(),
-    supabase.from("teams").select("id, name").eq("club_id", clubId).order("created_at").limit(1).maybeSingle(),
+    supabase
+      .from("clubs")
+      .select("id, name, anonymous_leader_view, screen_friendly")
+      .eq("id", clubId)
+      .maybeSingle(),
+    supabase
+      .from("teams")
+      .select("id, name, game_format")
+      .eq("club_id", clubId)
+      .order("created_at")
+      .limit(1)
+      .maybeSingle(),
   ]);
   if (!membership || !club) return null;
 
@@ -45,7 +55,19 @@ export async function loadClubContext(clubId: string): Promise<ClubContext | nul
     ? await supabase.from("seasons").select("id, label").eq("team_id", team.id).eq("is_active", true).maybeSingle()
     : { data: null };
 
-  return { supabase, userId, role: membership.role as "admin" | "leader", club, team, season };
+  return {
+    supabase,
+    userId,
+    role: membership.role as "admin" | "leader",
+    club: {
+      id: club.id,
+      name: club.name,
+      anonymousLeaderView: club.anonymous_leader_view,
+      screenFriendly: club.screen_friendly,
+    },
+    team: team ? { id: team.id, name: team.name, gameFormat: team.game_format } : null,
+    season,
+  };
 }
 
 /**
@@ -59,6 +81,13 @@ export async function requireClubMember(clubId: string): Promise<ClubContext> {
   const { data: claims } = await supabase.auth.getClaims();
   if (!claims?.claims?.sub) redirect("/logga-in");
   notFound();
+}
+
+/** For admin-only pages: leaders get a 404, as if the page did not exist. */
+export async function requireClubAdmin(clubId: string): Promise<ClubContext> {
+  const context = await requireClubMember(clubId);
+  if (context.role !== "admin") notFound();
+  return context;
 }
 
 export type Player = {

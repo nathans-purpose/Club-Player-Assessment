@@ -247,13 +247,17 @@ async function LeadersStep({ params }: Pick<PageProps<"/kom-igang/[clubId]/ledar
               <p className="text-muted">{t("onboarding.next.identityBody", "Klubbens färger, typsnitt och logga.")}</p>
             </li>
             <li>
-              <p className="font-medium">{t("onboarding.next.categories", "Bedömningskategorier")}</p>
+              <Link href={`/klubb/${clubId}/installningar/kategorier`} className="font-medium underline">
+                {t("onboarding.next.categories", "Bedömningskategorier")}
+              </Link>
               <p className="text-muted">
                 {t("onboarding.next.categoriesBody", "Vad ledarna betygsätter. Sex kategorier finns förifyllda.")}
               </p>
             </li>
             <li>
-              <p className="font-medium">{t("onboarding.next.positions", "Positioner på planen")}</p>
+              <Link href={`/klubb/${clubId}/installningar/positioner`} className="font-medium underline">
+                {t("onboarding.next.positions", "Positioner på planen")}
+              </Link>
               <p className="text-muted">
                 {t("onboarding.next.positionsBody", "Vilka positioner som visas och hur många ni behöver på varje.")}
               </p>
