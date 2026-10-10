@@ -68,6 +68,9 @@ async function HomeContent() {
               >
                 <span className="font-medium">{m.clubs!.name}</span>
                 <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm">
+                  <Link href={`/klubb/${m.clubs!.id}/spelare`} className="font-semibold underline">
+                    {t("home.clubs.assess", "Bedöm spelare")}
+                  </Link>
                   {m.role === "admin" && (
                     <>
                       <Link href={`/kom-igang/${m.clubs!.id}/spelare`} className="underline">
