@@ -12,7 +12,7 @@ secrets.** The seed data is made up.
 ## Stack
 
 - Next.js (App Router, TypeScript, Server Actions), deployed on Vercel
-- Supabase: Postgres, Auth (magic link + Google), Row Level Security
+- Supabase: Postgres, Auth (magic link + Google), Storage (club crests), Row Level Security
 - Tailwind CSS with CSS variables for all theme tokens (`app/globals.css`)
 - Vitest (unit and RLS tests), Playwright (end-to-end)
 
@@ -73,6 +73,10 @@ stack's database at port 54322 works too).
 ```
 app/                    routes (Swedish URLs: /logga-in, …)
 app/auth/callback       magic link and Google sign-in landing point
+app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 leaders (/[clubId]/…)
+app/inbjudan/[token]    accept an invite
+lib/onboarding/         defaults for a new club's team (formations, categories, phases)
+lib/players/            paste parsing and review-table statuses for the squad list
 lib/supabase/           server, browser and proxy clients
 lib/i18n.ts             t(key, fallback) — all UI copy goes through it
 proxy.ts                refreshes the session and sends signed-out visitors to /logga-in
@@ -94,9 +98,29 @@ Every table is scoped to a club through RLS:
 - **Anonymous** visitors have no access to any table.
 - The creator of a club becomes its first admin, and a club always keeps at
   least one admin.
-- Invites are accepted through `accept_invite(token)`. Email invites are
+- New clubs are created through `create_club(…)`, which also creates the first
+  team, an active season with four phases, position targets for the game
+  format and six placeholder categories, all in one transaction.
+- Invites are accepted through `accept_invite(token)`; `invite_preview(token)`
+  shows the club's name on the invite page before accepting. Email invites are
   single-use and must match the signed-in email; link invites (no email) work
   for anyone with the link until they expire (7 days by default).
+
+## Onboarding and invites
+
+*Kom igång* (`/kom-igang`) walks a new admin through account, club, players
+and leaders. Players are typed in or pasted (one per line: `nr name [group]`)
+and checked in a review table before anything is saved; file import comes in
+a later step.
+
+Invites are not emailed by the app yet. Each email invite gets a personal link
+that the admin copies or sends with *Skicka e-post* (opens their own mail
+program with a ready text). The shareable invite link makes anyone who opens
+it a leader for 7 days. Sending invites automatically needs an email provider
+(for example Resend or Supabase with custom SMTP).
+
+Club crests go to the public `club-crests` Storage bucket (PNG, JPG or WebP,
+max 2 MB; no SVG since the bucket is public).
 
 ## Deploying
 

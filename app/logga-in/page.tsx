@@ -5,6 +5,7 @@ import { APP_NAME } from "@/lib/config";
 import { t } from "@/lib/i18n";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
+import { loginCopy } from "./copy";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: `Logga in – ${APP_NAME}` };
@@ -25,19 +26,10 @@ export default function LoginPage({ searchParams }: PageProps<"/logga-in">) {
         </p>
       </div>
 
-      <Suspense fallback={<div className="min-h-64" />}>
+      <Suspense fallback={<div className="min-h-80" />}>
         <LoginContent searchParams={searchParams} />
       </Suspense>
 
-      <aside className="rounded-lg border border-border bg-surface-muted p-4 text-sm">
-        <p className="font-semibold">{t("login.invite.title", "Har du fått en inbjudan?")}</p>
-        <p className="mt-1 text-muted">
-          {t(
-            "login.invite.body",
-            "Använd länken i inbjudan i stället, så hamnar du direkt i rätt klubb. Du behöver inte skapa en ny klubb.",
-          )}
-        </p>
-      </aside>
     </main>
   );
 }
@@ -60,22 +52,29 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/logga-in">, "sear
         </p>
       )}
 
-      <LoginForm
-        next={next}
-        copy={{
-          google: t("login.google", "Fortsätt med Google"),
-          or: t("login.or", "eller"),
-          emailLabel: t("login.email.label", "E-postadress"),
-          emailPlaceholder: t("login.email.placeholder", "namn@exempel.se"),
-          sendLink: t("login.email.submit", "Skicka inloggningslänk"),
-          sending: t("login.email.sending", "Skickar …"),
-          sentTitle: t("login.sent.title", "Kolla din e-post"),
-          sentBody: t(
-            "login.sent.body",
-            "Vi har skickat en inloggningslänk till {email}. Öppna den på den här enheten.",
-          ),
-        }}
-      />
+      <LoginForm next={next} copy={loginCopy()} />
+
+      {next.startsWith("/inbjudan/") ? (
+        <aside className="rounded-lg border border-border bg-surface-muted p-4 text-sm">
+          <p className="font-semibold">{t("login.invited.title", "Logga in för att gå med i klubben")}</p>
+          <p className="mt-1 text-muted">
+            {t(
+              "login.invited.body",
+              "Använd samma e-postadress som inbjudan skickades till. Efter inloggningen kommer du tillbaka till inbjudan.",
+            )}
+          </p>
+        </aside>
+      ) : (
+        <aside className="rounded-lg border border-border bg-surface-muted p-4 text-sm">
+          <p className="font-semibold">{t("login.invite.title", "Har du fått en inbjudan?")}</p>
+          <p className="mt-1 text-muted">
+            {t(
+              "login.invite.body",
+              "Använd länken i inbjudan i stället, så hamnar du direkt i rätt klubb. Du behöver inte skapa en ny klubb.",
+            )}
+          </p>
+        </aside>
+      )}
     </>
   );
 }

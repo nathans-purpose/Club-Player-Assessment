@@ -1,27 +1,24 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { isValidEmail } from "@/lib/email";
 import { safeNextPath } from "@/lib/safe-redirect";
+import { siteOrigin } from "@/lib/site-url";
+import { createClient } from "@/lib/supabase/server";
 
 export type MagicLinkState = { status: "idle" | "sent" | "error"; message?: string; email?: string };
 
 async function callbackUrl(next: string) {
-  const h = await headers();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? h.get("origin") ?? `https://${h.get("host")}`;
-  const url = new URL("/auth/callback", origin);
+  const url = new URL("/auth/callback", await siteOrigin());
   url.searchParams.set("next", safeNextPath(next));
   return url.toString();
 }
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function sendMagicLink(_prev: MagicLinkState, formData: FormData): Promise<MagicLinkState> {
   const email = String(formData.get("email") ?? "").trim();
   const next = String(formData.get("next") ?? "/");
 
-  if (!EMAIL_PATTERN.test(email)) {
+  if (!isValidEmail(email)) {
     return { status: "error", message: "Skriv en giltig e-postadress.", email };
   }
 
@@ -57,8 +54,9 @@ export async function signInWithGoogle(formData: FormData) {
   redirect(data.url);
 }
 
-export async function signOut() {
+export async function signOut(formData?: FormData) {
+  const next = safeNextPath(formData?.get("next")?.toString(), "");
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/logga-in");
+  redirect(next ? `/logga-in?next=${encodeURIComponent(next)}` : "/logga-in");
 }
