@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { loadPlayers, requireClubAdmin } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { MAX_CATEGORIES, MAX_SUBCATEGORIES, RATINGS_WARNING_ABOVE } from "@/lib/settings/categories";
 import { loadEditableCategories } from "@/lib/settings/data";
 import { CategoriesEditor } from "./categories-editor";
@@ -31,18 +32,28 @@ async function Categories({ params }: Pick<PageProps<"/klubb/[clubId]/installnin
           {t("settings.back", "← Inställningar")}
         </Link>
         <p className="text-sm text-muted">{[club.name, team?.name].filter(Boolean).join(" · ")}</p>
-        <h1 className="mt-1 text-2xl font-bold">{t("settings.categories", "Bedömningskategorier")}</h1>
-        <p className="mt-2 max-w-prose text-muted">
-          {t(
+        <EditableText
+          as="h1"
+          className="mt-1 text-2xl font-bold"
+          {...te("settings.categories", "Bedömningskategorier")}
+        />
+        <EditableText
+          as="p"
+          className="mt-2 max-w-prose text-muted"
+          {...te(
             "settings.categories.intro",
             "Ledarna ger varje spelare ett betyg 1–10 i varje kategori. Fördjupa en kategori för att betygsätta den i flera delar; kategorins betyg blir då snittet av delarna.",
           )}
-        </p>
+        />
       </div>
       {team ? (
         <CategoriesEditor clubId={clubId} {...await loadEditable(supabase, team.id)} />
       ) : (
-        <p className="rounded-lg border border-border bg-surface p-4">{t("settings.noTeam", "Klubben har inget lag ännu.")}</p>
+        <EditableText
+          as="p"
+          className="rounded-lg border border-border bg-surface p-4"
+          {...te("settings.noTeam", "Klubben har inget lag ännu.")}
+        />
       )}
     </>
   );
@@ -89,7 +100,10 @@ function categoriesCopy() {
       "settings.categories.summaryMinutes",
       "Ungefär {perPlayer} min per spelare, {squad} min för hela truppen ({players} spelare) per ledare.",
     ),
-    summaryMinutesNoPlayers: t("settings.categories.summaryMinutesNoPlayers", "Ungefär {perPlayer} min per spelare och ledare."),
+    summaryMinutesNoPlayers: t(
+      "settings.categories.summaryMinutesNoPlayers",
+      "Ungefär {perPlayer} min per spelare och ledare.",
+    ),
     summaryWarning: t(
       "settings.categories.summaryWarning",
       "Mer än {n} betyg per spelare gör bedömningen lång, och då slarvar ledarna. Fundera på att slå ihop eller ta bort något.",

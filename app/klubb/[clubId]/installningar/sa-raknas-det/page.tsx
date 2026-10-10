@@ -16,7 +16,8 @@ import {
 } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
 import { formatPercent } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { POSITION_LEVEL_LABELS, POSITION_LEVELS } from "@/lib/positions";
 
 export const metadata: Metadata = { title: `Så räknas det – ${APP_NAME}` };
@@ -50,13 +51,15 @@ async function HowItWorks({ params }: Pick<PageProps<"/klubb/[clubId]/installnin
           </Link>
         )}
         <p className="text-sm text-muted">{club.name}</p>
-        <h1 className="mt-1 text-2xl font-bold">{t("howItWorks.title", "Så räknas det")}</h1>
-        <p className="mt-2 text-muted">
-          {t(
+        <EditableText as="h1" className="mt-1 text-2xl font-bold" {...te("howItWorks.title", "Så räknas det")} />
+        <EditableText
+          as="p"
+          className="mt-2 text-muted"
+          {...te(
             "howItWorks.intro",
             "Varje ledare bedömer spelarna på egen hand. Appen lägger ihop allas bedömningar till en gemensam bild. Siffrorna är ungefärliga, men de bygger på flera ledares omdöme, och när ni tycker olika syns det.",
           )}
-        </p>
+        />
       </div>
 
       <Section title={t("howItWorks.submitted.title", "Bara inskickade bedömningar räknas")}>
@@ -82,9 +85,7 @@ async function HowItWorks({ params }: Pick<PageProps<"/klubb/[clubId]/installnin
               "Spelarens snitt i en kategori är snittet av alla ledares betyg i kategorin.",
             )}
           </li>
-          <li>
-            {t("howItWorks.scores.total", "Totalt snitt är snittet av spelarens kategorisnitt.")}
-          </li>
+          <li>{t("howItWorks.scores.total", "Totalt snitt är snittet av spelarens kategorisnitt.")}</li>
           <li>
             {t(
               "howItWorks.scores.removed",
@@ -119,7 +120,12 @@ async function HowItWorks({ params }: Pick<PageProps<"/klubb/[clubId]/installnin
       </Section>
 
       <Section title={t("howItWorks.attendance.title", "Träningsnärvaro")}>
-        <p>{t("howItWorks.attendance.body", "Ledarna uppskattar närvaron för varje del av säsongen. Svaren räknas om till procent:")}</p>
+        <p>
+          {t(
+            "howItWorks.attendance.body",
+            "Ledarna uppskattar närvaron för varje del av säsongen. Svaren räknas om till procent:",
+          )}
+        </p>
         <ul className="list-disc space-y-1 pl-5">
           {ATTENDANCE_VALUES.map((v) => (
             <li key={v}>

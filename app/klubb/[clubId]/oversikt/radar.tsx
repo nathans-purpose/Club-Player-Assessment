@@ -1,5 +1,6 @@
 "use client";
 
+import { EditableText } from "@/components/text-edit";
 import { useId, useState } from "react";
 import { RADAR_MAX, RADAR_MIN, radarRadius } from "@/lib/calc";
 import { formatScore } from "@/lib/format";
@@ -39,9 +40,7 @@ export function RadarCard({ overview, copy }: { overview: Overview; copy: Overvi
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h2 id={headingId} className="text-lg font-semibold">
-          {copy.radar.title}
-        </h2>
+        <EditableText as="h2" id={headingId} className="text-lg font-semibold" {...copy.editable.radar} />
         <div className="flex flex-col gap-1">
           <label htmlFor={selectId} className="text-sm font-medium">
             {copy.radar.compare}

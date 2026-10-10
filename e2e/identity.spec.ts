@@ -153,7 +153,7 @@ test("a PDF brand document is drawn page by page in the browser before it is rea
   await page.goto(`/klubb/${clubId}/installningar/visuell-identitet`);
   await page.getByLabel("Välj dokument").setInputFiles("e2e/fixtures/brand.pdf");
   await expect(page.getByText("Förslaget från brand.pdf är ifyllt nedan. Kontrollera det och spara.")).toBeVisible();
-  const last = (await (await fetch("http://127.0.0.1:4010/last")).json()) as { images: number };
+  const last = (await (await fetch("http://127.0.0.1:4010/last-brand")).json()) as { images: number };
   expect(last.images).toBe(1);
   await expect(page.getByRole("list", { name: "Klubbens loggor" }).getByRole("listitem")).toHaveCount(1);
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { IMPORT_ACCEPT, IMPORT_BUCKET, IMPORT_MAX_BYTES, importPath } from "@/lib/players/import/files";
 import { prepareUpload } from "@/lib/players/import/prepare";
 import type { ImportedRow } from "@/lib/players/import/schema";
@@ -38,6 +38,13 @@ export function FileImport({
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const reading = state.status === "reading";
+
+  // A file chosen before the page finished loading never reached React's
+  // change handler; send the change again once the component is ready.
+  useEffect(() => {
+    const input = inputRef.current;
+    if (input?.files?.length) input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, []);
 
   async function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

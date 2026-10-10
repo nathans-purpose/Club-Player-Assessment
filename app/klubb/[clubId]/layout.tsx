@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { TextEditProvider, TextEditToggle } from "@/components/text-edit";
 import { loadClubContext } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
 import { loadAppliedTheme } from "@/lib/identity/data";
@@ -9,39 +10,33 @@ import { ClubNav } from "./club-nav";
 
 export default function ClubLayout({ children, params }: LayoutProps<"/klubb/[clubId]">) {
   return (
-    <div className="flex flex-1 flex-col">
-      {/* The club's visual identity, once an admin has applied it. */}
-      <Suspense fallback={null}>
-        <ClubTheme params={params} />
-      </Suspense>
-      <header className="border-t-4 border-b border-t-brand-stripe border-b-border bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 px-4 py-2">
-          <div className="flex items-center gap-3">
-            <Suspense fallback={null}>
-              <ClubLogo params={params} />
-            </Suspense>
-            <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
-              {APP_NAME}
-            </Link>
+    <TextEditProvider>
+      <div className="flex flex-1 flex-col pb-20">
+        {/* The club's visual identity, once an admin has applied it. */}
+        <Suspense fallback={null}>
+          <ClubTheme params={params} />
+        </Suspense>
+        <header className="border-t-4 border-b border-t-brand-stripe border-b-border bg-surface">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 px-4 py-2">
+            <div className="flex items-center gap-3">
+              <Suspense fallback={null}>
+                <ClubLogo params={params} />
+              </Suspense>
+              <Link href="/" className="inline-flex min-h-11 items-center font-semibold">
+                {APP_NAME}
+              </Link>
+            </div>
+            <div className="flex flex-wrap items-center gap-1">
+              {/* Reads the URL and the user's role, so it streams in after the static shell. */}
+              <Suspense fallback={null}>
+                <Nav params={params} />
+              </Suspense>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-1">
-            {/* Reads the URL and the user's role, so it streams in after the static shell. */}
-            <Suspense fallback={null}>
-              <Nav params={params} />
-            </Suspense>
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
-              >
-                {t("nav.signOut", "Logga ut")}
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-      {children}
-    </div>
+        </header>
+        {children}
+      </div>
+    </TextEditProvider>
   );
 }
 
@@ -75,17 +70,47 @@ async function Nav({ params }: Pick<LayoutProps<"/klubb/[clubId]">, "params">) {
   const { clubId } = await params;
   const context = await loadClubContext(clubId);
   return (
-    <ClubNav
-      links={[
-        { path: "spelare", label: t("nav.assess", "Bedöm spelare") },
-        { path: "oversikt", label: t("nav.overview", "Översikt") },
-        ...(context?.role === "admin"
-          ? [{ path: "installningar", label: t("nav.settings", "Inställningar") }]
-          : context
-            ? [{ path: "installningar/sa-raknas-det", label: t("nav.howItWorks", "Så räknas det") }]
-            : []),
-      ]}
-      label={t("nav.club", "Klubbens sidor")}
-    />
+    <>
+      <ClubNav
+        links={[
+          { path: "spelare", label: t("nav.assess", "Bedöm spelare") },
+          { path: "oversikt", label: t("nav.overview", "Översikt") },
+          ...(context?.role === "admin"
+            ? [{ path: "installningar", label: t("nav.settings", "Inställningar") }]
+            : context
+              ? [{ path: "installningar/sa-raknas-det", label: t("nav.howItWorks", "Så räknas det") }]
+              : []),
+        ]}
+        label={t("nav.club", "Klubbens sidor")}
+      />
+      {context?.role === "admin" && (
+        <TextEditToggle
+          copy={{
+            toggle: t("textEdit.toggle", "Redigera texter"),
+            label: t("textEdit.label", "Ändrade texter"),
+            editHeading: t("textEdit.editHeading", "Redigera rubrik"),
+            editBody: t("textEdit.editBody", "Redigera text"),
+            done: t("textEdit.done", "Klar"),
+            cancel: t("common.cancel", "Avbryt"),
+            reset: t("textEdit.reset", "Återställ standardtexten"),
+            edited: t("textEdit.edited", "ändrad, inte sparad"),
+            pending: t("textEdit.pending", "{count} ändrade texter som inte är sparade"),
+            save: t("common.save", "Spara"),
+            saving: t("common.saving", "Sparar …"),
+            undo: t("textEdit.undo", "Ångra"),
+            saved: t("textEdit.saved", "Texterna är sparade och syns för hela klubben."),
+            error: t("textEdit.error", "Det gick inte att spara. Försök igen."),
+          }}
+        />
+      )}
+      <form action={signOut}>
+        <button
+          type="submit"
+          className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
+        >
+          {t("nav.signOut", "Logga ut")}
+        </button>
+      </form>
+    </>
   );
 }

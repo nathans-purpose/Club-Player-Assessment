@@ -1,3 +1,4 @@
+import { EditableText } from "@/components/text-edit";
 import { formatScore } from "@/lib/format";
 import type { Overview } from "@/lib/overview";
 import { SQUAD_GROUPS } from "@/lib/players/squad-groups";
@@ -48,9 +49,7 @@ export function Facts({ overview, copy }: { overview: Overview; copy: OverviewCo
       aria-labelledby="facts-heading"
       className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4"
     >
-      <h2 id="facts-heading" className="text-lg font-semibold">
-        {copy.facts.title}
-      </h2>
+      <EditableText as="h2" id="facts-heading" className="text-lg font-semibold" {...copy.editable.facts} />
       <ul className="flex list-disc flex-col gap-1 pl-5">
         {items.map((item) => (
           <li key={item}>{item}</li>

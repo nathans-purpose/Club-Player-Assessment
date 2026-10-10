@@ -89,12 +89,15 @@ lib/identity/           visual identity: contrast, theme tokens, brand document 
 lib/players/            paste parsing and review-table statuses for the squad list
 lib/players/import/     file import: accepted types, file-to-text conversion, the Claude call and its schema
 lib/supabase/           server, browser and proxy clients
-lib/i18n.ts             t(key, fallback) — all UI copy goes through it
+lib/i18n.ts             t(key, fallback) — all UI copy goes through it; club overrides per request
+lib/privacy/            data export (JSON, CSV) and the guardian information text
+components/text-edit.tsx "Redigera texter": edit mode, inline editors, Spara / Ångra bar
+app/integritet, app/villkor privacy notice and terms placeholder (public)
 proxy.ts                refreshes the session and sends signed-out visitors to /logga-in
 supabase/migrations/    schema, RLS policies and helper functions
 supabase/seed.sql       demo club for local development
 tests/db/               RLS and seed tests
-e2e/                    Playwright tests
+e2e/                    Playwright tests; journey.spec.ts runs the whole flow, accessibility.spec.ts runs axe
 ```
 
 ## Access model
@@ -209,6 +212,37 @@ back to the default look and keeps what was saved.
   deleted on save. Only the club's admins can write there. A font file in a
   public bucket can be downloaded by anyone who has its address, as on any
   website that uses web fonts, so only upload fonts licensed for the web.
+
+## Redigera texter
+
+Admins get *Redigera texter* in the club header. In edit mode headings get a
+pencil button and body texts a *Redigera text* button; edits are drafts until
+*Spara* (or *Ångra*) in the bar at the bottom, and a text set back to its
+default is removed. Saved texts go to `ui_text_overrides` and apply to every
+`t()` call on the club's pages and its Kom igång steps: loading the club
+(`loadClubContext`, `requireAdminClub`) puts the overrides in a per-request
+store that `t()` reads. Headings and body texts on the club pages are editable
+in place; button labels and other short strings take overrides too but have no
+inline editor yet.
+
+## Data och integritet
+
+`/installningar/data` (admins only):
+
+- **Export** of everything the club owns as JSON, or as a zip with one CSV per
+  table (semicolon-separated, for Swedish Excel). Read under RLS as the admin,
+  so leaders' unsent drafts and invite tokens are not included.
+- **Delete a player**: a hard delete after a confirmation; the player's
+  assessments go with them.
+- **Delete the club**: the admin types the club's name; the club's files in
+  Storage are removed first, then the club and everything under it.
+- **Guardian information**: for teams with players under 18, a text to send to
+  guardians, also shown on *Bedöm spelare* to admins until they confirm it was
+  sent (`teams.guardian_info_confirmed_at`).
+
+`/integritet` and `/villkor` are open without signing in and linked in the
+footer. **Both are templates: the club is the data controller and must have
+them reviewed before real use.**
 
 ## Onboarding and invites
 

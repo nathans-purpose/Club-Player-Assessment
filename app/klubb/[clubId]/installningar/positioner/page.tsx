@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { loadPositionTargets, requireClubAdmin } from "@/lib/assessment/data";
 import { APP_NAME } from "@/lib/config";
-import { t } from "@/lib/i18n";
+import { EditableText } from "@/components/text-edit";
+import { t, te } from "@/lib/i18n";
 import { POSITION_LABELS, type PositionCode } from "@/lib/positions";
 import { MAX_TARGET } from "@/lib/settings/positions";
 import { PositionsEditor } from "./positions-editor";
@@ -32,13 +33,19 @@ async function Positions({ params }: Pick<PageProps<"/klubb/[clubId]/installning
           {t("settings.back", "← Inställningar")}
         </Link>
         <p className="text-sm text-muted">{[club.name, team?.name].filter(Boolean).join(" · ")}</p>
-        <h1 className="mt-1 text-2xl font-bold">{t("settings.positions", "Positioner på planen")}</h1>
-        <p className="mt-2 max-w-prose text-muted">
-          {t(
+        <EditableText
+          as="h1"
+          className="mt-1 text-2xl font-bold"
+          {...te("settings.positions", "Positioner på planen")}
+        />
+        <EditableText
+          as="p"
+          className="mt-2 max-w-prose text-muted"
+          {...te(
             "settings.positions.intro",
             "Tryck på en position för att visa eller dölja den på lagets plan. Antalet är hur många spelare laget behöver som kan spela där; det styr färgen under Antal i Översikt.",
           )}
-        </p>
+        />
       </div>
       {team ? (
         <PositionsEditor
@@ -48,7 +55,11 @@ async function Positions({ params }: Pick<PageProps<"/klubb/[clubId]/installning
           copy={positionsCopy()}
         />
       ) : (
-        <p className="rounded-lg border border-border bg-surface p-4">{t("settings.noTeam", "Klubben har inget lag ännu.")}</p>
+        <EditableText
+          as="p"
+          className="rounded-lg border border-border bg-surface p-4"
+          {...te("settings.noTeam", "Klubben har inget lag ännu.")}
+        />
       )}
     </>
   );

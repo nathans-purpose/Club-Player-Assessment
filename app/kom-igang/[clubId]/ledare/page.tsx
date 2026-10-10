@@ -243,13 +243,19 @@ async function LeadersStep({ params }: Pick<PageProps<"/kom-igang/[clubId]/ledar
           </p>
           <ul className="mt-3 flex flex-col gap-3 text-sm">
             <li>
-              <Link href={`/klubb/${clubId}/installningar/visuell-identitet`} className="font-medium underline">
+              <Link
+                href={`/klubb/${clubId}/installningar/visuell-identitet`}
+                className="inline-flex min-h-11 items-center font-medium underline"
+              >
                 {t("onboarding.next.identity", "Visuell identitet")}
               </Link>
               <p className="text-muted">{t("onboarding.next.identityBody", "Klubbens färger, typsnitt och logga.")}</p>
             </li>
             <li>
-              <Link href={`/klubb/${clubId}/installningar/kategorier`} className="font-medium underline">
+              <Link
+                href={`/klubb/${clubId}/installningar/kategorier`}
+                className="inline-flex min-h-11 items-center font-medium underline"
+              >
                 {t("onboarding.next.categories", "Bedömningskategorier")}
               </Link>
               <p className="text-muted">
@@ -257,7 +263,10 @@ async function LeadersStep({ params }: Pick<PageProps<"/kom-igang/[clubId]/ledar
               </p>
             </li>
             <li>
-              <Link href={`/klubb/${clubId}/installningar/positioner`} className="font-medium underline">
+              <Link
+                href={`/klubb/${clubId}/installningar/positioner`}
+                className="inline-flex min-h-11 items-center font-medium underline"
+              >
                 {t("onboarding.next.positions", "Positioner på planen")}
               </Link>
               <p className="text-muted">
