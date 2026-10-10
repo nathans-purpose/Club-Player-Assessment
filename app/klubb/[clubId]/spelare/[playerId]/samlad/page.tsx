@@ -43,7 +43,9 @@ export default function CombinedPage({ params }: PageProps<"/klubb/[clubId]/spel
 
 async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[playerId]/samlad">, "params">) {
   const { clubId, playerId } = await params;
-  const { supabase, userId, team, season } = await requireClubMember(clubId);
+  const { supabase, userId, club, team, season } = await requireClubMember(clubId);
+  // The club can hide who gave which score; then only averages and spread show.
+  const anonymous = club.anonymousLeaderView;
   if (!team || !season || !isUuid(playerId)) notFound();
 
   const [{ data: player }, categories, phases, targets, { data: rows }] = await Promise.all([
@@ -71,13 +73,15 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
   const cardHref = `/klubb/${clubId}/spelare/${playerId}`;
   if (!assessments.some((a) => a.leader_id === userId)) redirect(cardHref);
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, email")
-    .in(
-      "id",
-      assessments.map((a) => a.leader_id),
-    );
+  const { data: profiles } = anonymous
+    ? { data: [] }
+    : await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in(
+          "id",
+          assessments.map((a) => a.leader_id),
+        );
   const you = t("combined.you", "Du");
   const nameOf = (leaderId: string) => {
     if (leaderId === userId) return you;
@@ -97,6 +101,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
   const positionByCode = new Map(positions.map((p) => [p.code, p]));
   const pitchCodes = POSITION_CODES.filter((code) => positionByCode.has(code) || targets.some((p) => p.code === code));
   const comments = assessments.filter((a) => a.comment);
+  const spreadLabel = t("combined.spread", "Spridning {min}–{max}");
 
   return (
     <>
@@ -239,6 +244,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
                   nameOf={nameOf}
                   userId={userId}
                   flag={t("combined.disagreement", "Oeniga – diskutera")}
+                  spreadLabel={anonymous ? spreadLabel : null}
                   heading
                 />
                 {c.subcategories.length > 0 && (
@@ -251,6 +257,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
                           nameOf={nameOf}
                           userId={userId}
                           flag={t("combined.disagreement", "Oeniga – diskutera")}
+                          spreadLabel={anonymous ? spreadLabel : null}
                         />
                       </li>
                     ))}
@@ -271,7 +278,7 @@ async function Combined({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
             {comments.map((a) => (
               <li key={a.id} className="rounded-lg border border-border bg-surface p-3">
                 <p className="whitespace-pre-line">{a.comment}</p>
-                <p className="mt-1 text-sm text-muted">{nameOf(a.leader_id)}</p>
+                {!anonymous && <p className="mt-1 text-sm text-muted">{nameOf(a.leader_id)}</p>}
               </li>
             ))}
           </ul>
@@ -314,6 +321,7 @@ function ScoreRow({
   nameOf,
   userId,
   flag,
+  spreadLabel,
   heading = false,
 }: {
   title: string;
@@ -321,6 +329,8 @@ function ScoreRow({
   nameOf: (leaderId: string) => string;
   userId: string;
   flag: string;
+  /** Set in the anonymous leader view: the spread replaces the per-leader chips. */
+  spreadLabel: string | null;
   heading?: boolean;
 }) {
   // The leader's own score first, then the others in submission order.
@@ -342,7 +352,15 @@ function ScoreRow({
           <ScoreValue value={summary.average} />
         </span>
       </div>
-      {chips.length > 0 && (
+      {spreadLabel !== null ? (
+        chips.length > 1 && (
+          <p className="text-sm text-muted">
+            {spreadLabel
+              .replace("{min}", formatChipScore(Math.min(...chips.map((p) => p.score))))
+              .replace("{max}", formatChipScore(Math.max(...chips.map((p) => p.score))))}
+          </p>
+        )
+      ) : chips.length > 0 && (
         <ul className="flex flex-wrap gap-1.5">
           {chips.map((p) => (
             <li
@@ -351,11 +369,16 @@ function ScoreRow({
                 p.leaderId === userId ? "border-primary bg-primary/10 font-semibold" : "border-border bg-surface-muted"
               }`}
             >
-              {nameOf(p.leaderId)}: {Number.isInteger(p.score) ? p.score : formatScore(p.score)}
+              {nameOf(p.leaderId)}: {formatChipScore(p.score)}
             </li>
           ))}
         </ul>
       )}
     </div>
   );
+}
+
+/** A leader's score: whole numbers as they are, subcategory means with a decimal. */
+function formatChipScore(score: number): string {
+  return Number.isInteger(score) ? String(score) : formatScore(score);
 }

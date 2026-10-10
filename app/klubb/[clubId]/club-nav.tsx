@@ -9,7 +9,7 @@ export function ClubNav({ links, label }: { links: { path: string; label: string
   const { clubId } = useParams<{ clubId: string }>();
   return (
     <nav aria-label={label}>
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         {links.map((link) => {
           const href = `/klubb/${clubId}/${link.path}`;
           const current = pathname === href || pathname.startsWith(`${href}/`);

@@ -2,8 +2,12 @@ import { t } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS, type SquadGroup } from "@/lib/players/squad-groups";
 import { POSITION_LABELS, POSITION_LEVEL_LABELS, type PositionCode, type PositionLevel } from "@/lib/positions";
 
-/** All copy for Översikt, through t() so club text overrides apply. */
-export function overviewCopy() {
+/**
+ * All copy for Översikt, through t() so club text overrides apply. The
+ * screen-friendly mode (for a big screen in front of the team) says "Lägst"
+ * instead of "Svagast".
+ */
+export function overviewCopy({ screenFriendly = false }: { screenFriendly?: boolean } = {}) {
   return {
     tabs: {
       label: t("overview.tabs", "Visa"),
@@ -66,22 +70,25 @@ export function overviewCopy() {
       fewNone: t("overview.facts.fewNone", "Alla spelare har minst 3 bedömningar"),
       lowAttendance: t("overview.facts.lowAttendance", "{n} spelare har under 60 % träningsnärvaro"),
       strongest: t("overview.facts.strongest", "Starkast som lag: {category} ({value})"),
-      weakest: t("overview.facts.weakest", "Svagast som lag: {category} ({value})"),
+      weakest: screenFriendly
+        ? t("overview.facts.lowest", "Lägst som lag: {category} ({value})")
+        : t("overview.facts.weakest", "Svagast som lag: {category} ({value})"),
       disputed: t("overview.facts.disputed", "Mest oenighet: {category} ({n} spelare)"),
     },
     rankings: {
-      title: t("overview.rankings", "Lag, bäst och svagast"),
-      hint: t(
-        "overview.rankings.hint",
-        "Lag visar alla spelare sorterade under Data. Bäst och Svagast visar spelarna.",
-      ),
+      title: screenFriendly
+        ? t("overview.rankingsLowest", "Lag, bäst och lägst")
+        : t("overview.rankings", "Lag, bäst och svagast"),
+      hint: screenFriendly
+        ? t("overview.rankings.hintLowest", "Lag visar alla spelare sorterade under Data. Bäst och Lägst visar spelarna.")
+        : t("overview.rankings.hint", "Lag visar alla spelare sorterade under Data. Bäst och Svagast visar spelarna."),
       rateNote: t(
         "overview.rankings.rateNote",
         "Per match räknas bara för spelare med minst 5 matcher. Mål och assist räknas inte för målvakter.",
       ),
       team: t("overview.rankings.team", "Lag"),
       best: t("overview.rankings.best", "Bäst"),
-      worst: t("overview.rankings.worst", "Svagast"),
+      worst: screenFriendly ? t("overview.rankings.lowest", "Lägst") : t("overview.rankings.worst", "Svagast"),
       players: t("overview.rankings.players", "{n} spelare"),
       teamLabel: t("overview.rankings.teamLabel", "Lag, {metric}: {value}. Visa alla spelare sorterade"),
       extremeLabel: t("overview.rankings.extremeLabel", "{kind}, {metric}: {value}, {who}"),
