@@ -363,6 +363,13 @@ function BrandImport({
   const inputRef = useRef<HTMLInputElement>(null);
   const reading = state.status === "reading";
 
+  // A file chosen before the page finished loading never reached React's
+  // change handler; send the change again once the component is ready.
+  useEffect(() => {
+    const input = inputRef.current;
+    if (input?.files?.length) input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, []);
+
   async function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -629,6 +636,13 @@ function LogosSection({
 }: SectionProps & { withUndo: (message: string, update: (d: Draft) => Draft) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // A file chosen before the page finished loading never reached React's
+  // change handler; send the change again once the component is ready.
+  useEffect(() => {
+    const input = inputRef.current;
+    if (input?.files?.length) input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, []);
 
   async function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

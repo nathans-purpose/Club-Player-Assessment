@@ -8,6 +8,8 @@ import http from "node:http";
 
 const port = Number(process.env.MOCK_ANTHROPIC_PORT ?? 4010);
 let last = null;
+// Brand requests are kept apart, so a player import in a parallel test does not replace them.
+let lastBrand = null;
 
 function players(text) {
   return text
@@ -59,6 +61,10 @@ http
       res.writeHead(200, { "content-type": "application/json" });
       return res.end(JSON.stringify(last));
     }
+    if (req.method === "GET" && req.url === "/last-brand") {
+      res.writeHead(200, { "content-type": "application/json" });
+      return res.end(JSON.stringify(lastBrand));
+    }
     if (req.method === "GET" && req.url === "/health") return res.end("ok");
     let raw = "";
     req.on("data", (chunk) => (raw += chunk));
@@ -67,6 +73,7 @@ http
       if (String(body.system ?? "").includes("visual identity")) {
         const content = body.messages?.[0]?.content ?? [];
         last = { system: body.system, model: body.model, images: content.filter((b) => b.type === "image").length };
+        lastBrand = last;
         return reply(res, body.model, BRAND);
       }
       const block = body.messages?.[0]?.content?.[0] ?? {};
