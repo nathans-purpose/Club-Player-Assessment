@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
+import type { ImportedRow, UncertainField } from "@/lib/players/import/schema";
 import { parsePlayerLines } from "@/lib/players/parse";
 import { needsCheck, reviewStatuses, type ReviewRow, type ReviewStatus } from "@/lib/players/review";
 import { SQUAD_GROUPS, type SquadGroup } from "@/lib/players/squad-groups";
 import { savePlayers, type SavePlayersState } from "./actions";
+import { FileImport, type FileImportCopy } from "./file-import";
 
 type Copy = Record<
   | "pasteTitle"
@@ -33,11 +35,26 @@ type Copy = Record<
   | "saving"
   | "saveEmpty"
   | "duplicatesBlock"
-  | "skip",
+  | "skip"
+  | "uncertain"
+  | "confirm"
+  | "confirmLabel",
   string
-> & { statusLabels: Record<ReviewStatus, string>; groupLabels: Record<SquadGroup, string> };
+> & {
+  statusLabels: Record<ReviewStatus, string>;
+  groupLabels: Record<SquadGroup, string>;
+  uncertainLabels: Record<UncertainField, string>;
+  upload: FileImportCopy;
+};
 
 type Row = ReviewRow & { key: number; sourceText?: string };
+
+// Editing a field the importer was unsure about counts as checking it.
+const FIELD_OF: Record<"shirtNumber" | "fullName" | "squadGroup", UncertainField> = {
+  shirtNumber: "shirt_number",
+  fullName: "full_name",
+  squadGroup: "squad_group",
+};
 
 const UNDO_MS = 5000;
 
@@ -71,6 +88,7 @@ export function PlayersEditor({
   const [pasteMessage, setPasteMessage] = useState("");
   const [onlyNeedsCheck, setOnlyNeedsCheck] = useState(false);
   const [removed, setRemoved] = useState<{ row: Row; index: number } | null>(null);
+  const [hasImported, setHasImported] = useState(false);
   const [clientError, setClientError] = useState("");
   const [state, formAction, pending] = useActionState<SavePlayersState, FormData>(savePlayers.bind(null, clubId), {
     status: "idle",
@@ -97,9 +115,33 @@ export function PlayersEditor({
     return () => clearTimeout(timer);
   }, [removed]);
 
-  function update(key: number, patch: Partial<Row>) {
+  function update(key: number, patch: Partial<Pick<Row, "shirtNumber" | "fullName" | "squadGroup">>) {
     setClientError("");
-    setRows((current) => current.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+    const checked = (Object.keys(patch) as (keyof typeof FIELD_OF)[]).map((f) => FIELD_OF[f]);
+    setRows((current) =>
+      current.map((r) =>
+        r.key === key ? { ...r, ...patch, uncertainFields: r.uncertainFields?.filter((f) => !checked.includes(f)) } : r,
+      ),
+    );
+  }
+
+  /** The admin has checked what the importer was unsure about. */
+  function confirmRow(key: number) {
+    setRows((current) => current.map((r) => (r.key === key ? { ...r, uncertainFields: [] } : r)));
+  }
+
+  /** Appends rows to the list, replacing the empty rows at the end. */
+  function append(added: Row[]) {
+    setOnlyNeedsCheck(false);
+    setRows((current) => [
+      ...current.filter((r) => r.shirtNumber.trim() || r.fullName.trim() || r.squadGroup),
+      ...added,
+    ]);
+  }
+
+  function addFromFile(imported: ImportedRow[]) {
+    setHasImported(true);
+    append(imported.map((r) => ({ key: nextKey++, ...r })));
   }
 
   function addRow() {
@@ -124,17 +166,15 @@ export function PlayersEditor({
   function addFromPaste() {
     const parsed = parsePlayerLines(paste);
     if (parsed.length === 0) return;
-    setRows((current) => [
-      // Pasted players replace the empty rows at the end.
-      ...current.filter((r) => r.shirtNumber.trim() || r.fullName.trim() || r.squadGroup),
-      ...parsed.map((p) => ({
+    append(
+      parsed.map((p) => ({
         key: nextKey++,
         shirtNumber: p.shirtNumber ?? "",
         fullName: p.fullName,
         squadGroup: p.squadGroup ?? ("" as const),
         sourceText: p.sourceText,
       })),
-    ]);
+    );
     setPaste("");
     setPasteMessage(copy.pasteAdded.replace("{count}", String(parsed.length)));
   }
@@ -156,6 +196,8 @@ export function PlayersEditor({
 
   return (
     <div className="flex flex-col gap-6">
+      <FileImport clubId={clubId} hasImported={hasImported} onRows={addFromFile} copy={copy.upload} />
+
       <section aria-labelledby="paste-title" className="rounded-xl border border-border bg-surface p-4">
         <h2 id="paste-title" className="font-semibold">
           {copy.pasteTitle}
@@ -231,6 +273,8 @@ export function PlayersEditor({
             const n = index + 1;
             const label = copy.rowLabel.replace("{n}", String(n));
             const statusId = `status-${row.key}`;
+            const unsure = new Set(row.uncertainFields ?? []);
+            const unsureClass = (field: UncertainField) => (unsure.has(field) ? " border-dashed border-scale-mid" : "");
             return (
               <li
                 key={row.key}
@@ -250,7 +294,7 @@ export function PlayersEditor({
                     value={row.shirtNumber}
                     onChange={(e) => update(row.key, { shirtNumber: e.target.value })}
                     aria-describedby={status ? statusId : undefined}
-                    className={inputClass}
+                    className={inputClass + unsureClass("shirt_number")}
                   />
                 </div>
                 <div>
@@ -265,7 +309,7 @@ export function PlayersEditor({
                     value={row.fullName}
                     onChange={(e) => update(row.key, { fullName: e.target.value })}
                     aria-describedby={status ? statusId : undefined}
-                    className={inputClass}
+                    className={inputClass + unsureClass("full_name")}
                   />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
@@ -277,7 +321,8 @@ export function PlayersEditor({
                     id={`group-${row.key}`}
                     value={row.squadGroup}
                     onChange={(e) => update(row.key, { squadGroup: e.target.value as Row["squadGroup"] })}
-                    className={inputClass}
+                    aria-describedby={status ? statusId : undefined}
+                    className={inputClass + unsureClass("squad_group")}
                   >
                     <option value="">{copy.squadGroupNone}</option>
                     {SQUAD_GROUPS.map((g) => (
@@ -295,6 +340,15 @@ export function PlayersEditor({
                         className={`rounded-full border px-2.5 py-1 text-sm font-medium ${STATUS_CLASS[status]}`}
                       >
                         {copy.statusLabels[status]}
+                        {unsure.size > 0 && (
+                          <span className="sr-only">
+                            {" "}
+                            {copy.uncertain.replace(
+                              "{fields}",
+                              [...unsure].map((f) => copy.uncertainLabels[f]).join(", "),
+                            )}
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>
@@ -311,10 +365,32 @@ export function PlayersEditor({
                     <span className="sm:hidden">{copy.remove}</span>
                   </button>
                 </div>
-                {row.sourceText && (
-                  <p className="col-span-2 text-xs text-muted sm:col-span-5">
-                    {copy.source}: <span className="font-mono">{row.sourceText}</span>
-                  </p>
+                {(row.sourceText || unsure.size > 0) && (
+                  <div className="col-span-2 flex flex-col gap-0.5 text-xs text-muted sm:col-span-5">
+                    {unsure.size > 0 && (
+                      <div className="flex flex-wrap items-center gap-x-3">
+                        <p aria-hidden="true">
+                          {copy.uncertain.replace(
+                            "{fields}",
+                            [...unsure].map((f) => copy.uncertainLabels[f]).join(", "),
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => confirmRow(row.key)}
+                          aria-label={copy.confirmLabel.replace("{n}", String(n))}
+                          className="min-h-11 font-medium text-foreground underline"
+                        >
+                          {copy.confirm}
+                        </button>
+                      </div>
+                    )}
+                    {row.sourceText && (
+                      <p>
+                        {copy.source}: <span className="font-mono">{row.sourceText}</span>
+                      </p>
+                    )}
+                  </div>
                 )}
               </li>
             );

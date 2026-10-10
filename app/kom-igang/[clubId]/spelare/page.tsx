@@ -11,7 +11,10 @@ import { PlayersEditor } from "./players-editor";
 
 export const metadata: Metadata = { title: `Lägg till spelare – ${APP_NAME}` };
 
-// Kom igång 3: players, entered by hand or pasted. File import comes later.
+// Reading a photo or PDF with Claude can take a while.
+export const maxDuration = 120;
+
+// Kom igång 3: players, read from an uploaded file, typed in or pasted.
 export default function PlayersStepPage({ params, searchParams }: PageProps<"/kom-igang/[clubId]/spelare">) {
   return (
     <>
@@ -42,7 +45,7 @@ async function PlayersStep({ params, searchParams }: PageProps<"/kom-igang/[club
         <p className="mt-2 text-muted">
           {t(
             "onboarding.players.intro",
-            "Skriv in truppen för {team} eller klistra in en lista. Spelarna får inga konton och ser aldrig bedömningarna.",
+            "Ladda upp truppen för {team}, klistra in en lista eller skriv in spelarna. Spelarna får inga konton och ser aldrig bedömningarna.",
           ).replace("{team}", team?.name ?? club.name)}
         </p>
       </div>
@@ -102,6 +105,34 @@ async function PlayersStep({ params, searchParams }: PageProps<"/kom-igang/[club
           statusLabels: Object.fromEntries(
             Object.entries(REVIEW_STATUS_LABELS).map(([k, v]) => [k, t(`onboarding.players.statusLabel.${k}`, v)]),
           ) as typeof REVIEW_STATUS_LABELS,
+          uncertain: t("onboarding.players.uncertain", "Osäker läsning: {fields}"),
+          confirm: t("onboarding.players.confirm", "Det stämmer"),
+          confirmLabel: t("onboarding.players.confirmLabel", "Det stämmer, spelare {n}"),
+          uncertainLabels: {
+            shirt_number: t("onboarding.players.uncertainField.shirt_number", "nummer"),
+            full_name: t("onboarding.players.uncertainField.full_name", "namn"),
+            squad_group: t("onboarding.players.uncertainField.squad_group", "lagdel"),
+          },
+          upload: {
+            title: t("onboarding.players.upload.title", "Ladda upp en lista"),
+            hint: t(
+              "onboarding.players.upload.hint",
+              "Foto, skärmbild, PDF, Excel, CSV eller Word, högst 20 MB. Vi läser av spelarna och raderar filen direkt. Inget sparas förrän du har kontrollerat listan.",
+            ),
+            choose: t("onboarding.players.upload.choose", "Välj fil"),
+            chooseMore: t("onboarding.players.upload.chooseMore", "Ladda upp en fil till"),
+            reading: t("onboarding.players.upload.reading", "Läser {file} …"),
+            added: t(
+              "onboarding.players.upload.added",
+              "{count} spelare hittades i {file}. Kontrollera listan innan du sparar.",
+            ),
+            wrongType: t(
+              "onboarding.players.upload.wrongType",
+              "Den filtypen kan vi inte läsa. Använd en bild, PDF, Excel (.xlsx), CSV eller Word (.docx).",
+            ),
+            tooBig: t("onboarding.players.upload.tooBig", "Filen är större än 20 MB."),
+            uploadFailed: t("onboarding.players.upload.failed", "Filen kunde inte laddas upp. Försök igen."),
+          },
           groupLabels: Object.fromEntries(
             Object.entries(SQUAD_GROUP_LABELS).map(([k, v]) => [k, t(`squadGroup.${k}`, v)]),
           ) as typeof SQUAD_GROUP_LABELS,

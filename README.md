@@ -12,7 +12,8 @@ secrets.** The seed data is made up.
 ## Stack
 
 - Next.js (App Router, TypeScript, Server Actions), deployed on Vercel
-- Supabase: Postgres, Auth (magic link + Google), Storage (club crests), Row Level Security
+- Supabase: Postgres, Auth (magic link + Google), Storage (club crests, player list uploads), Row Level Security
+- Anthropic API (Claude) for reading uploaded player lists, server-side only
 - Tailwind CSS with CSS variables for all theme tokens (`app/globals.css`)
 - Vitest (unit and RLS tests), Playwright (end-to-end)
 
@@ -83,6 +84,7 @@ lib/assessment/         form state, completeness and payload checks; server-side
 lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
 lib/players/            paste parsing and review-table statuses for the squad list
+lib/players/import/     file import: accepted types, file-to-text conversion, the Claude call and its schema
 lib/supabase/           server, browser and proxy clients
 lib/i18n.ts             t(key, fallback) — all UI copy goes through it
 proxy.ts                refreshes the session and sends signed-out visitors to /logga-in
@@ -143,9 +145,34 @@ charts are replaced by "Väntar på bedömningar (X av Y)". Match stats come fro
 ## Onboarding and invites
 
 *Kom igång* (`/kom-igang`) walks a new admin through account, club, players
-and leaders. Players are typed in or pasted (one per line: `nr name [group]`)
-and checked in a review table before anything is saved; file import comes in
-a later step.
+and leaders. Players are uploaded as a file, typed in or pasted (one per line:
+`nr name [group]`), and checked in a review table before anything is saved.
+
+## Player import
+
+On *Kom igång 3* an admin can upload the squad as a photo or screenshot, PDF,
+Excel (.xlsx), CSV or Word (.docx) file, up to 20 MB. Older .xls and .doc
+files are not supported.
+
+1. The browser uploads the file straight to the private `player-imports`
+   bucket under `<club_id>/`. Only that club's admins can write, read or delete
+   there. Photos that are large or in a format Claude cannot read (HEIC) are
+   redrawn as JPEG in the browser first, which also drops EXIF data.
+2. `readPlayerFile` (a server action) downloads the file and sends it to
+   Claude (`claude-opus-5-5`, structured JSON output validated with zod).
+   Photos and PDFs go as images and documents; spreadsheets, CSV and Word files
+   are turned into text first. The prompt tells Claude to treat the document as
+   data only, and the answer can only be player rows.
+3. The file is deleted right after reading, whatever the outcome. Uploads
+   older than an hour that were never read (a closed tab) are deleted on the
+   next import.
+4. The rows land in the review table with what Claude was unsure about marked
+   ("Osäker läsning"), and nothing reaches `players` until the admin saves.
+
+Set `ANTHROPIC_API_KEY` on the server to turn the import on; without it the
+page says file import is not switched on and the other ways still work. The
+end-to-end tests use `e2e/mock-anthropic.mjs` instead of the real API (start
+the app with `ANTHROPIC_BASE_URL=http://127.0.0.1:4010`).
 
 Invites are not emailed by the app yet. Each email invite gets a personal link
 that the admin copies or sends with *Skicka e-post* (opens their own mail
@@ -165,4 +192,5 @@ max 2 MB; no SVG since the bucket is public).
    `https://<your-domain>/auth/callback` to the redirect URLs, and enable Google
    with your OAuth client.
 4. In Vercel, import the repository and set `NEXT_PUBLIC_SUPABASE_URL`,
-   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `NEXT_PUBLIC_SITE_URL`.
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL` and
+   `ANTHROPIC_API_KEY` (server-side only, never `NEXT_PUBLIC_`).
