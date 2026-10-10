@@ -75,6 +75,10 @@ app/                    routes (Swedish URLs: /logga-in, …)
 app/auth/callback       magic link and Google sign-in landing point
 app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 leaders (/[clubId]/…)
 app/inbjudan/[token]    accept an invite
+app/klubb/[clubId]/spelare  Spelarkort: player list, form (autosave), thank-you (/tack), combined view (/samlad)
+lib/calc.ts             all calculation rules (spec §5), the single source of truth
+lib/assessment/         form state, completeness and payload checks; server-side data loading
+lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
 lib/players/            paste parsing and review-table statuses for the squad list
 lib/supabase/           server, browser and proxy clients
@@ -105,6 +109,19 @@ Every table is scoped to a club through RLS:
   shows the club's name on the invite page before accepting. Email invites are
   single-use and must match the signed-in email; link invites (no email) work
   for anyone with the link until they expire (7 days by default).
+
+## Spelarkort
+
+Leaders reach the form from *Bedöm spelare* (`/klubb/[clubId]/spelare`), a
+list of active players with their own status (Ej påbörjad / Utkast /
+Inskickad). Drafts autosave (debounced) through `save_assessment(…)`, which
+writes the assessment, scores, positions and attendance in one transaction
+under RLS. Once submitted, an assessment changes only when the leader submits
+it again, so half-finished edits never reach the combined view. A leader sees
+the combined view of a player only after submitting their own assessment.
+
+The pitch coordinates in `lib/positions.ts` are placeholders until they are
+matched to the design prototype.
 
 ## Onboarding and invites
 

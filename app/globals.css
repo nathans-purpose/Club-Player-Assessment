@@ -18,6 +18,9 @@
   --scale-low: #e5484d;
   --scale-mid: #f5c524;
   --scale-high: #a3f01a;
+  /* Pitch */
+  --pitch: #2f7d4a;
+  --pitch-line: rgba(255, 255, 255, 0.55);
 }
 
 @theme inline {
@@ -33,6 +36,7 @@
   --color-scale-low: var(--scale-low);
   --color-scale-mid: var(--scale-mid);
   --color-scale-high: var(--scale-high);
+  --color-pitch: var(--pitch);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
