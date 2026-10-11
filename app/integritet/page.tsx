@@ -29,6 +29,12 @@ export default function PrivacyPage() {
           <li>
             {t("privacy.what.assessments", "Ledarnas bedömningar: betyg, positioner, träningsnärvaro och kommentarer.")}
           </li>
+          <li>
+            {t(
+              "privacy.what.season",
+              "Säsongsplanering: var ledarna tror att varje spelare passar in nästa säsong, och namn, klubb och position på spelare utanför klubben som ledarna vill värva. Inga kontaktuppgifter.",
+            )}
+          </li>
         </ul>
         <p>
           {t(

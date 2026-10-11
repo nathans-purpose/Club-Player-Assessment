@@ -16,6 +16,9 @@ type Club = {
   subcategoryId: string;
   draftAssessmentId: string;
   submittedAssessmentId: string;
+  areaId: string;
+  draftEvaluationId: string;
+  submittedEvaluationId: string;
 };
 
 let db: Client;
@@ -119,6 +122,41 @@ async function createClub(adminId: string, leaderIds: string[], name: string): P
     );
   }
 
+  // Säsong: evaluations (draft and submitted, like assessments) and the plan.
+  const areaId = await one("select id from evaluation_areas where team_id = $1 order by sort_order limit 1", [teamId]);
+  const draftEvaluationId = await one(
+    "insert into season_evaluations (season_id, leader_id, status, strengths) values ($1, $2, 'draft', '{Utkast}') returning id",
+    [seasonId, leaderIds[0]],
+  );
+  const submittedEvaluationId = await one(
+    "insert into season_evaluations (season_id, leader_id, status, strengths) values ($1, $2, 'submitted', '{Press}') returning id",
+    [seasonId, adminId],
+  );
+  for (const evaluationId of [draftEvaluationId, submittedEvaluationId]) {
+    await db.query(
+      "insert into season_evaluation_ratings (evaluation_id, area_id, score, training) values ($1, $2, 6, 'too_little')",
+      [evaluationId, areaId],
+    );
+  }
+  await db.query("insert into season_reviews (season_id, final_position) values ($1, 4)", [seasonId]);
+  await db.query(
+    "insert into season_matches (season_id, round, opponent, venue, goals_for, goals_against) values ($1, 1, 'Testlag', 'home', 2, 1)",
+    [seasonId],
+  );
+  await db.query("insert into season_plans (season_id, goal) values ($1, 'Topp tre')", [seasonId]);
+  await db.query("insert into plan_priorities (season_id, area) values ($1, 'Fasta situationer')", [seasonId]);
+  await db.query("insert into squad_plan_positions (season_id, position_code, wanted_count) values ($1, 'MV', 2)", [
+    seasonId,
+  ]);
+  await db.query(
+    "insert into squad_plan_players (season_id, player_id, status, position_code) values ($1, $2, 'key', 'MV')",
+    [seasonId, playerIds[0]],
+  );
+  await db.query(
+    "insert into recruitment_targets (season_id, full_name, position_code) values ($1, 'Extern Spelare', 'A')",
+    [seasonId],
+  );
+
   return {
     clubId,
     teamId,
@@ -129,6 +167,9 @@ async function createClub(adminId: string, leaderIds: string[], name: string): P
     subcategoryId,
     draftAssessmentId,
     submittedAssessmentId,
+    areaId,
+    draftEvaluationId,
+    submittedEvaluationId,
   };
 }
 
@@ -177,6 +218,19 @@ const clubRowCounters: Record<string, (c: Club) => [string, unknown[]]> = {
     "select count(*) from assessment_attendance where assessment_id = any($1)",
     [[c.draftAssessmentId, c.submittedAssessmentId]],
   ],
+  evaluation_areas: (c) => ["select count(*) from evaluation_areas where team_id = $1", [c.teamId]],
+  season_evaluations: (c) => ["select count(*) from season_evaluations where season_id = $1", [c.seasonId]],
+  season_evaluation_ratings: (c) => [
+    "select count(*) from season_evaluation_ratings where evaluation_id = any($1)",
+    [[c.draftEvaluationId, c.submittedEvaluationId]],
+  ],
+  season_reviews: (c) => ["select count(*) from season_reviews where season_id = $1", [c.seasonId]],
+  season_matches: (c) => ["select count(*) from season_matches where season_id = $1", [c.seasonId]],
+  season_plans: (c) => ["select count(*) from season_plans where season_id = $1", [c.seasonId]],
+  plan_priorities: (c) => ["select count(*) from plan_priorities where season_id = $1", [c.seasonId]],
+  squad_plan_positions: (c) => ["select count(*) from squad_plan_positions where season_id = $1", [c.seasonId]],
+  squad_plan_players: (c) => ["select count(*) from squad_plan_players where season_id = $1", [c.seasonId]],
+  recruitment_targets: (c) => ["select count(*) from recruitment_targets where season_id = $1", [c.seasonId]],
 };
 
 async function countAs(userId: string | null, table: string, club: Club) {
