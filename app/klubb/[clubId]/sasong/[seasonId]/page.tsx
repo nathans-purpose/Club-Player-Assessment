@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { EditableText } from "@/components/text-edit";
-import { attributeT, scaleColor } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
 import { formatCount, formatRateShort, formatScore } from "@/lib/format";
 import { t, te } from "@/lib/i18n";
@@ -30,6 +29,7 @@ import {
   summariseAreas,
   summariseOutlook,
 } from "@/lib/season/summary";
+import { Score, Tile } from "../parts";
 import { buttonPrimary, card } from "../ui";
 
 export const metadata: Metadata = { title: `Säsongens sammanställning – ${APP_NAME}` };
@@ -430,27 +430,6 @@ function signed(n: number): string {
 
 function share(value: number | null): string {
   return value === null ? "–" : `${Math.round(value * 100)} %`;
-}
-
-function Tile({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="rounded-lg border border-border bg-surface p-3">
-      <span className="block text-sm text-muted">{label}</span>
-      <span className="text-2xl font-bold">{children}</span>
-    </div>
-  );
-}
-
-/** A 1–10 average with its colour; the number is always shown. */
-function Score({ value }: { value: number | null }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      {value !== null && (
-        <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ background: scaleColor(attributeT(value)) }} />
-      )}
-      <span className="font-semibold">{formatScore(value)}</span>
-    </span>
-  );
 }
 
 function Flag({ children }: { children: ReactNode }) {
