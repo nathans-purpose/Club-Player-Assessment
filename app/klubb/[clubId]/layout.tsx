@@ -75,6 +75,7 @@ async function Nav({ params }: Pick<LayoutProps<"/klubb/[clubId]">, "params">) {
         links={[
           { path: "spelare", label: t("nav.assess", "Bedöm spelare") },
           { path: "oversikt", label: t("nav.overview", "Översikt") },
+          ...(context ? [{ path: "sasong", label: t("nav.season", "Säsong") }] : []),
           ...(context?.role === "admin"
             ? [{ path: "installningar", label: t("nav.settings", "Inställningar") }]
             : context

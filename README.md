@@ -85,9 +85,11 @@ app/kom-igang/          onboarding: 1 account, 2 club (/klubb), 3 players and 4 
 app/inbjudan/[token]    accept an invite
 app/klubb/[clubId]/spelare  Spelarkort: player list, form (autosave), thank-you (/tack), combined view (/samlad)
 app/klubb/[clubId]/oversikt Översikt: tabs Översikt and Data (?flik=data), pitch, radar, Fakta, rankings, quick view
+app/klubb/[clubId]/sasong Säsong: seasons, evaluation summary, own evaluation, results and planning
 app/klubb/[clubId]/installningar Inställningar: visuell-identitet, kategorier, positioner, sa-raknas-det and display options
 lib/calc.ts             all calculation rules (spec §5), the single source of truth
 lib/overview.ts         builds everything Översikt shows from the rows, using calc.ts
+lib/season/             Säsong: results and evaluation summary rules, squad plan, input checks, copy
 lib/assessment/         form state, completeness and payload checks; server-side data loading
 lib/positions.ts        position codes, labels and pitch coordinates
 lib/onboarding/         defaults for a new club's team (formations, categories, phases)
@@ -154,6 +156,29 @@ show that phase.
 Until a quarter of all possible assessments (players × members) are in, the
 charts are replaced by "Väntar på bedömningar (X av Y)". Match stats come from
 `player_season_stats`, which has no editing screen yet.
+
+## Säsong
+
+`/klubb/[clubId]/sasong` is the leaders' evaluation of a season as a team and
+their plan for the next one. Admins and leaders share it; players never see it.
+Seasons are rows in `seasons`, so 2026 can be compared with 2027; admins add a
+season (`create_season`) without changing the active one that players are
+assessed in.
+
+- *Min utvärdering*: each leader rates the team's tactic and training areas
+  1–10 (`evaluation_areas`, 21 defaults per team), says whether each was
+  trained enough, and writes three strengths, three weaknesses and an outlook.
+  Drafts autosave and are private until submitted, like assessments.
+- *Resultat*: a shared match log, final position, how the goals came, and
+  totals for a season without a match log (for comparison).
+- *Sammanställning*: results, home/away and spring/autumn, the previous season,
+  and, once the leader has submitted their own, area averages with
+  *Oeniga – diskutera* (spread ≥ 3) and *Prioritera?* (average below 6 and two
+  or more say too little training). Rules are in `lib/season/summary.ts`.
+- *Planering*: strategy, at most three improvement priorities (suggested from
+  the previous season's evaluation), the desired squad per position against
+  the current players (with their player-card average and main position) and
+  a recruitment wishlist of players outside the club.
 
 ## Inställningar
 
