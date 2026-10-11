@@ -294,7 +294,8 @@ function Evaluation({
         rows={groups.map((g) => [g.group, <Score key={g.group} value={g.average} />])}
       />
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+      {/* relative: keeps the absolutely positioned sr-only header inside the scroll box on phones. */}
+      <div className="relative overflow-x-auto rounded-xl border border-border bg-surface">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <caption className="p-3 text-left font-semibold">
             {t("season.summary.areas", "Per område")}
