@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { APP_NAME } from "@/lib/config";
 import { t } from "@/lib/i18n";
+import { isGoogleLoginEnabled } from "@/lib/supabase/auth-settings";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "../logga-in/login-form";
 import { loginCopy } from "../logga-in/copy";
@@ -48,5 +49,5 @@ async function AccountContent() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (data?.claims) redirect(NEXT_STEP);
-  return <LoginForm next={NEXT_STEP} copy={loginCopy()} />;
+  return <LoginForm next={NEXT_STEP} google={await isGoogleLoginEnabled()} copy={loginCopy()} />;
 }

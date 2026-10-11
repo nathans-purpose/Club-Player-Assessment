@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { APP_NAME } from "@/lib/config";
 import { t } from "@/lib/i18n";
 import { safeNextPath } from "@/lib/safe-redirect";
+import { isGoogleLoginEnabled } from "@/lib/supabase/auth-settings";
 import { createClient } from "@/lib/supabase/server";
 import { loginCopy } from "./copy";
 import { LoginForm } from "./login-form";
@@ -43,6 +44,7 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/logga-in">, "sear
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (data?.claims) redirect(next);
+  const google = await isGoogleLoginEnabled();
 
   return (
     <>
@@ -52,7 +54,7 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/logga-in">, "sear
         </p>
       )}
 
-      <LoginForm next={next} copy={loginCopy()} />
+      <LoginForm next={next} google={google} copy={loginCopy()} />
 
       {next.startsWith("/inbjudan/") ? (
         <aside className="rounded-lg border border-border bg-surface-muted p-4 text-sm">
