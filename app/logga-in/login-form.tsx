@@ -14,7 +14,7 @@ export type LoginCopy = {
   sentBody: string;
 };
 
-export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
+export function LoginForm({ next, google, copy }: { next: string; google: boolean; copy: LoginCopy }) {
   const [state, formAction, pending] = useActionState<MagicLinkState, FormData>(sendMagicLink, {
     status: "idle",
   });
@@ -30,22 +30,26 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <form action={signInWithGoogle}>
-        <input type="hidden" name="next" value={next} />
-        <button
-          type="submit"
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
-        >
-          <GoogleIcon />
-          {copy.google}
-        </button>
-      </form>
+      {google && (
+        <>
+          <form action={signInWithGoogle}>
+            <input type="hidden" name="next" value={next} />
+            <button
+              type="submit"
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
+            >
+              <GoogleIcon />
+              {copy.google}
+            </button>
+          </form>
 
-      <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
-        <span className="h-px flex-1 bg-border" />
-        {copy.or}
-        <span className="h-px flex-1 bg-border" />
-      </div>
+          <div className="flex items-center gap-3 text-sm text-muted" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            {copy.or}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      )}
 
       <form action={formAction} className="flex flex-col gap-2" noValidate>
         <input type="hidden" name="next" value={next} />
