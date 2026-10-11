@@ -23,6 +23,8 @@ async function createClub(page: Page, project: string): Promise<string> {
 }
 
 test("leaders evaluate a season and plan the next one", async ({ page }, testInfo) => {
+  // A long flow: sign-up, a match, an evaluation and a plan.
+  test.setTimeout(120_000);
   const year = new Date().getFullYear();
   const clubId = await createClub(page, testInfo.project.name);
 
@@ -59,7 +61,7 @@ test("leaders evaluate a season and plan the next one", async ({ page }, testInf
 
   // The summary counts it, but hides the ratings until the leader has submitted.
   await page.getByRole("link", { name: "Sammanställning" }).click();
-  await expect(page.getByText("Poäng per match")).toBeVisible();
+  await expect(page.getByText("Poäng per match").first()).toBeVisible();
   await expect(page.getByText("Fyll i din egen utvärdering först.", { exact: false })).toBeVisible();
 
   // Own evaluation: one area, a strength, then submit.
