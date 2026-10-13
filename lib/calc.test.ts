@@ -10,6 +10,7 @@ import {
   hasFewAssessments,
   isLowAttendance,
   leaderProgress,
+  levelsAtLeast,
   levelsFromSummary,
   mainPosition,
   mean,
@@ -269,6 +270,21 @@ describe("rule 7: pitch metric Antal", () => {
   it("handles a position without a target", () => {
     expect(positionCoverage("OM", 0, players).t).toBe(1);
     expect(positionCoverage("A", 0, players).t).toBe(0);
+  });
+});
+
+describe("filtering the pitch by level", () => {
+  const levels = { CM: 3 as const, OM: 2 as const, A: 1 as const };
+
+  it("keeps positions at the level or better", () => {
+    expect(levelsAtLeast(levels, 1)).toEqual(levels);
+    expect(levelsAtLeast(levels, 2)).toEqual({ CM: 3, OM: 2 });
+    expect(levelsAtLeast(levels, 3)).toEqual({ CM: 3 });
+  });
+
+  it("counts only natural players when filtered to Naturlig", () => {
+    const players = [{ CM: 3 as const }, { CM: 2 as const }, { CM: 1 as const }].map((l) => levelsAtLeast(l, 3));
+    expect(positionCoverage("CM", 2, players)).toMatchObject({ weighted: 1, strongCount: 1, t: 0.5 });
   });
 });
 

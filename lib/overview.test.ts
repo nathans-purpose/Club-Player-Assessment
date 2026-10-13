@@ -119,6 +119,19 @@ describe("buildOverview", () => {
     expect(a.attributes["category:tek"]!.average).toBeCloseTo((7 + 0.3 * 6) / 1.3);
   });
 
+  it("narrows the pitch to natural players, or natural and funkar bra", () => {
+    const at = (level: 1 | 2 | 3) => overview.pitchByLevel[level].find((s) => s.code === "A")!;
+    expect(overview.pitchByLevel[1]).toEqual(overview.pitch);
+    // back plays A at level 1 only, so both narrower pitches leave them out.
+    for (const level of [2, 3] as const) {
+      expect(at(level).players).toEqual([{ id: "nine", level: 3 }]);
+      expect(at(level).coverage.weighted).toBeCloseTo(1);
+      expect(at(level).coverage.strongCount).toBe(1);
+      expect(at(level).attributes["category:tek"]!.average).toBeCloseTo(7);
+    }
+    expect(at(1).players).toHaveLength(2);
+  });
+
   it("compares a squad group with the team on the radar", () => {
     expect(overview.radar.groups.MV).toEqual({ tek: 7.5, fys: 6 });
     expect(overview.radar.groups.MF).toEqual({ tek: null, fys: null });

@@ -246,6 +246,11 @@ export function levelsFromSummary(positions: readonly PositionSummary[]): Player
   return Object.fromEntries(positions.map((p) => [p.code, p.level]));
 }
 
+/** Keeps only the positions played at minLevel or better ("Naturlig" is 3). */
+export function levelsAtLeast(levels: PlayerLevels, minLevel: PositionLevel): PlayerLevels {
+  return Object.fromEntries(Object.entries(levels).filter(([, level]) => level >= minLevel));
+}
+
 export type Coverage = {
   /** Σ weight(level) over players who can play the position. */
   weighted: number;

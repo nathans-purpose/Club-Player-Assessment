@@ -61,14 +61,31 @@ export function overviewCopy({ screenFriendly = false }: { screenFriendly?: bool
         "overview.pitch.countHint",
         "Antal: spelare som är naturliga eller funkar bra på positionen, mot hur många laget behöver.",
       ),
+      countHintNatural: t(
+        "overview.pitch.countHintNatural",
+        "Antal: naturliga spelare på positionen, mot hur många laget behöver.",
+      ),
       attributeHint: t(
         "overview.pitch.attributeHint",
         "Snittbetyg för spelarna som kan spela positionen. Naturliga spelare väger tyngst.",
       ),
+      attributeHintGood: t(
+        "overview.pitch.attributeHintGood",
+        "Snittbetyg för spelarna som är naturliga eller funkar bra på positionen. Naturliga spelare väger tyngst.",
+      ),
+      attributeHintNatural: t(
+        "overview.pitch.attributeHintNatural",
+        "Snittbetyg för de naturliga spelarna på positionen.",
+      ),
+      levelFilter: t("overview.pitch.levelFilter", "Räkna med"),
+      levelNatural: t("overview.pitch.levelNatural", "Bara naturliga"),
+      levelGood: t("overview.pitch.levelGood", "Naturliga och funkar bra"),
+      levelAll: t("overview.pitch.levelAll", "Alla som kan spela"),
       legend: t("overview.pitch.legend", "Rött är svagt, gult mellan och grönt starkt. Siffran visas alltid."),
       coverage: t("overview.pitch.coverage", "{strong} av {target}"),
       spot: t("overview.pitch.spot", "{position}: {value}"),
       noPlayers: t("overview.pitch.noPlayers", "Ingen spelare kan spela här än."),
+      noPlayersAtLevel: t("overview.pitch.noPlayersAtLevel", "Ingen spelare på den här nivån än."),
       close: t("common.close", "Stäng"),
     },
     radar: {
