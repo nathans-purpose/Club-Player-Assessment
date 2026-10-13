@@ -6,7 +6,7 @@ import { Pitch, pitchSpotStyle } from "@/components/pitch";
 import { glows, scaleColor } from "@/lib/calc";
 import { formatScore } from "@/lib/format";
 import { metricValue, type MetricKey, type Overview, type PitchMetric, type PitchSpot } from "@/lib/overview";
-import { POSITION_COORDS, type PositionCode } from "@/lib/positions";
+import { POSITION_COORDS, type PositionCode, type PositionLevel } from "@/lib/positions";
 import type { OverviewCopy } from "./copy";
 
 const HOVER_CLOSE_DELAY = 150;
@@ -14,7 +14,8 @@ const HOVER_CLOSE_DELAY = 150;
 /**
  * The team pitch with metric chips (rules 7–9). Hovering or focusing a
  * position shows who can play there; a tap or click pins it, with a close
- * button, so it works on touch screens too.
+ * button, so it works on touch screens too. The level chips narrow the pitch
+ * to natural players, or natural and "funkar bra"; all three is the default.
  */
 export function TeamPitch({
   overview,
@@ -26,6 +27,7 @@ export function TeamPitch({
   onOpenPlayer: (playerId: string, metric: MetricKey | null) => void;
 }) {
   const [metric, setMetric] = useState<PitchMetric>("count");
+  const [minLevel, setMinLevel] = useState<PositionLevel>(1);
   const [hovered, setHovered] = useState<PositionCode | null>(null);
   const [focused, setFocused] = useState<PositionCode | null>(null);
   const [pinned, setPinned] = useState<PositionCode | null>(null);
@@ -40,7 +42,8 @@ export function TeamPitch({
 
   const transient = hovered ?? focused;
   const shown = pinned ?? (transient === dismissed ? null : transient);
-  const spot = overview.pitch.find((s) => s.code === shown) ?? null;
+  const pitch = overview.pitchByLevel[minLevel];
+  const spot = pitch.find((s) => s.code === shown) ?? null;
 
   function close(code: PositionCode) {
     clearTimeout(hoverTimer.current);
@@ -81,6 +84,21 @@ export function TeamPitch({
     { id: "total", label: copy.metric.totalShort },
   ];
   const metricName = metrics.find((m) => m.id === metric)!.label;
+  const levels: { id: PositionLevel; label: string }[] = [
+    { id: 3, label: copy.pitch.levelNatural },
+    { id: 2, label: copy.pitch.levelGood },
+    { id: 1, label: copy.pitch.levelAll },
+  ];
+  const hint =
+    metric === "count"
+      ? minLevel === 3
+        ? copy.pitch.countHintNatural
+        : copy.pitch.countHint
+      : minLevel === 3
+        ? copy.pitch.attributeHintNatural
+        : minLevel === 2
+          ? copy.pitch.attributeHintGood
+          : copy.pitch.attributeHint;
 
   function display(s: PitchSpot): { t: number | null; text: string } {
     if (metric === "count") {
@@ -101,28 +119,15 @@ export function TeamPitch({
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
       <EditableText as="h2" id={headingId} className="text-lg font-semibold" {...copy.editable.pitch} />
-      <div role="group" aria-label={copy.pitch.metrics} className="flex flex-wrap gap-1.5">
-        {metrics.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            aria-pressed={metric === m.id}
-            onClick={() => setMetric(m.id)}
-            className={`min-h-11 rounded-full border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink ${
-              metric === m.id ? "border-primary bg-primary text-on-primary" : "border-border hover:bg-surface-muted"
-            }`}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+      <Chips label={copy.pitch.metrics} options={metrics} value={metric} onChange={setMetric} />
+      <Chips label={copy.pitch.levelFilter} options={levels} value={minLevel} onChange={setMinLevel} />
       <p className="text-sm text-muted">
-        {metric === "count" ? copy.pitch.countHint : copy.pitch.attributeHint} {copy.pitch.hint}
+        {hint} {copy.pitch.hint}
       </p>
 
       <div ref={containerRef}>
         <Pitch label={`${copy.pitch.title}: ${metricName}`}>
-          {overview.pitch.map((s) => {
+          {pitch.map((s) => {
             const { t, text } = display(s);
             const open = shown === s.code;
             return (
@@ -206,7 +211,7 @@ export function TeamPitch({
                 )}
               </div>
               {spot.players.length === 0 ? (
-                <p className="mt-2 text-muted">{copy.pitch.noPlayers}</p>
+                <p className="mt-2 text-muted">{minLevel === 1 ? copy.pitch.noPlayers : copy.pitch.noPlayersAtLevel}</p>
               ) : (
                 <ul className="mt-2 flex max-h-56 flex-col overflow-y-auto">
                   {spot.players.map(({ id, level }) => {
@@ -238,6 +243,38 @@ export function TeamPitch({
       </div>
       <p className="text-sm text-muted">{copy.pitch.legend}</p>
     </section>
+  );
+}
+
+/** A row of toggle chips; exactly one is pressed. */
+function Chips<T extends string | number>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-sm text-muted">{label}</span>
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          aria-pressed={value === o.id}
+          onClick={() => onChange(o.id)}
+          className={`min-h-11 rounded-full border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink ${
+            value === o.id ? "border-primary bg-primary text-on-primary" : "border-border hover:bg-surface-muted"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
   );
 }
 

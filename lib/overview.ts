@@ -14,6 +14,7 @@ import {
   phaseAttendance,
   positionAttribute,
   positionCoverage,
+  levelsAtLeast,
   type PlayerLevels,
   type StatMetric,
   statValue,
@@ -22,7 +23,7 @@ import {
   summarizePositions,
 } from "./calc";
 import { SQUAD_GROUPS, type SquadGroup } from "./players/squad-groups";
-import { POSITION_CODES, type PositionCode, type PositionLevel } from "./positions";
+import { POSITION_CODES, POSITION_LEVELS, type PositionCode, type PositionLevel } from "./positions";
 
 // ---------------------------------------------------------------------------
 // Inputs
@@ -171,7 +172,13 @@ export type Overview = {
   };
   /** Too few assessments for charts to mean anything yet. */
   waiting: boolean;
+  /** The pitch counting every player who can play a position ("Kan spela" and up). */
   pitch: PitchSpot[];
+  /**
+   * The pitch counting only players at a level or better, keyed by that level:
+   * 3 is "Naturlig" only, 2 adds "Funkar bra", 1 is the same as pitch.
+   */
+  pitchByLevel: Record<PositionLevel, PitchSpot[]>;
   radar: { team: Record<string, number | null>; groups: Record<SquadGroup, Record<string, number | null>> };
   rankings: Ranking[];
   facts: {
@@ -257,37 +264,44 @@ export function buildOverview(input: OverviewInput): Overview {
   const present = (values: (number | null)[]) => values.filter((v): v is number => v !== null);
   const goals = present(players.map((p) => p.stats.goals));
 
-  // Pitch (rules 7–8)
-  const levels: { id: string; levels: PlayerLevels; player: OverviewPlayer }[] = players.map((p) => ({
-    id: p.id,
-    levels: Object.fromEntries(p.positions.map((x) => [x.code, x.level])) as PlayerLevels,
-    player: p,
-  }));
+  // Pitch (rules 7–8), once per lowest level the pitch can be filtered to.
   const shown = POSITION_CODES.filter((code) => input.targets.some((t) => t.code === code));
-  const pitch: PitchSpot[] = shown.map((code) => {
-    const target = input.targets.find((t) => t.code === code)!.target;
-    const attribute = (value: (p: OverviewPlayer) => number | null) =>
-      positionAttribute(
+  const buildPitch = (minLevel: PositionLevel): PitchSpot[] => {
+    const levels: { id: string; levels: PlayerLevels; player: OverviewPlayer }[] = players.map((p) => ({
+      id: p.id,
+      levels: levelsAtLeast(Object.fromEntries(p.positions.map((x) => [x.code, x.level])) as PlayerLevels, minLevel),
+      player: p,
+    }));
+    return shown.map((code) => {
+      const target = input.targets.find((t) => t.code === code)!.target;
+      const attribute = (value: (p: OverviewPlayer) => number | null) =>
+        positionAttribute(
+          code,
+          levels.map((l) => ({ levels: l.levels, value: value(l.player) })),
+        );
+      return {
         code,
-        levels.map((l) => ({ levels: l.levels, value: value(l.player) })),
-      );
-    return {
-      code,
-      coverage: positionCoverage(
-        code,
-        target,
-        levels.map((l) => l.levels),
-      ),
-      attributes: {
-        total: attribute((p) => p.totalAverage),
-        ...Object.fromEntries(categoryIds.map((id) => [`category:${id}`, attribute((p) => p.categoryAverages[id])])),
-      },
-      players: levels
-        .filter((l) => l.levels[code])
-        .map((l) => ({ id: l.id, level: l.levels[code]! }))
-        .sort((a, b) => b.level - a.level),
-    };
-  });
+        coverage: positionCoverage(
+          code,
+          target,
+          levels.map((l) => l.levels),
+        ),
+        attributes: {
+          total: attribute((p) => p.totalAverage),
+          ...Object.fromEntries(categoryIds.map((id) => [`category:${id}`, attribute((p) => p.categoryAverages[id])])),
+        },
+        players: levels
+          .filter((l) => l.levels[code])
+          .map((l) => ({ id: l.id, level: l.levels[code]! }))
+          .sort((a, b) => b.level - a.level),
+      };
+    });
+  };
+  const pitchByLevel = Object.fromEntries(POSITION_LEVELS.map((level) => [level, buildPitch(level)])) as Record<
+    PositionLevel,
+    PitchSpot[]
+  >;
+  const pitch = pitchByLevel[1];
 
   // Radar (rule 10)
   const radarInput = players.map((p) => ({ squadGroup: p.squadGroup, categoryAverages: p.categoryAverages }));
@@ -349,6 +363,7 @@ export function buildOverview(input: OverviewInput): Overview {
     },
     waiting: isWaitingForAssessments(submitted, expected),
     pitch,
+    pitchByLevel,
     radar,
     rankings,
     facts: {
