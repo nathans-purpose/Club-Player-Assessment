@@ -14,14 +14,22 @@ export default function HomePage({ searchParams }: PageProps<"/">) {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
           <span className="font-semibold">{APP_NAME}</span>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
+          <div className="flex items-center gap-1">
+            <Link
+              href="/konto"
+              className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
             >
-              {t("nav.signOut", "Logga ut")}
-            </button>
-          </form>
+              {t("nav.account", "Mitt konto")}
+            </Link>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="min-h-11 rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
+              >
+                {t("nav.signOut", "Logga ut")}
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 

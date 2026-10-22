@@ -1,13 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
-import { sendMagicLink, signInWithGoogle, type MagicLinkState } from "./actions";
+import { useActionState, useState } from "react";
+import { signInWithEmail, signInWithGoogle, type MagicLinkState } from "./actions";
 
 export type LoginCopy = {
   google: string;
   or: string;
   emailLabel: string;
   emailPlaceholder: string;
+  passwordLabel: string;
+  passwordHint: string;
+  signIn: string;
+  signingIn: string;
   sendLink: string;
   sending: string;
   sentTitle: string;
@@ -15,9 +19,11 @@ export type LoginCopy = {
 };
 
 export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
-  const [state, formAction, pending] = useActionState<MagicLinkState, FormData>(sendMagicLink, {
+  const [state, formAction, pending] = useActionState<MagicLinkState, FormData>(signInWithEmail, {
     status: "idle",
   });
+  // Which submit button was pressed, so only that one shows it is working.
+  const [intent, setIntent] = useState<"password" | "link">("password");
 
   if (state.status === "sent") {
     return (
@@ -64,6 +70,21 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
           aria-describedby={state.status === "error" ? "email-error" : undefined}
           className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         />
+
+        <label htmlFor="password" className="mt-2 font-medium">
+          {copy.passwordLabel}
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          aria-describedby={state.status === "error" ? "password-hint email-error" : "password-hint"}
+          className="min-h-11 rounded-lg border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
+        />
+        <p id="password-hint" className="text-sm text-muted">
+          {copy.passwordHint}
+        </p>
         {state.status === "error" && (
           <p id="email-error" role="alert" className="text-sm text-danger">
             {state.message}
@@ -71,10 +92,23 @@ export function LoginForm({ next, copy }: { next: string; copy: LoginCopy }) {
         )}
         <button
           type="submit"
+          name="intent"
+          value="password"
+          onClick={() => setIntent("password")}
           disabled={pending}
           className="mt-2 min-h-11 rounded-lg bg-primary px-4 font-semibold text-on-primary hover:opacity-90 disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
         >
-          {pending ? copy.sending : copy.sendLink}
+          {pending && intent === "password" ? copy.signingIn : copy.signIn}
+        </button>
+        <button
+          type="submit"
+          name="intent"
+          value="link"
+          onClick={() => setIntent("link")}
+          disabled={pending}
+          className="min-h-11 rounded-lg border border-border bg-surface px-4 font-medium hover:bg-surface-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink"
+        >
+          {pending && intent === "link" ? copy.sending : copy.sendLink}
         </button>
       </form>
     </div>

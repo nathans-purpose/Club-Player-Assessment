@@ -104,6 +104,12 @@ async function Nav({ params }: Pick<LayoutProps<"/klubb/[clubId]">, "params">) {
           }}
         />
       )}
+      <Link
+        href="/konto"
+        className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-primary-ink"
+      >
+        {t("nav.account", "Mitt konto")}
+      </Link>
       <form action={signOut}>
         <button
           type="submit"
