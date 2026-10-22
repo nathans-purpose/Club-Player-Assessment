@@ -14,6 +14,41 @@ async function callbackUrl(next: string) {
   return url.toString();
 }
 
+/**
+ * The email form has two submit buttons: "Logga in" signs in with the
+ * password, "Skicka inloggningslänk" emails a magic link and ignores it. With
+ * the password left empty, "Logga in" (and Enter) also sends a link, so people
+ * without a password keep signing in the way they always have.
+ */
+export async function signInWithEmail(prev: MagicLinkState, formData: FormData): Promise<MagicLinkState> {
+  if (formData.get("intent") === "password" && formData.get("password")) return signInWithPassword(formData);
+  return sendMagicLink(prev, formData);
+}
+
+async function signInWithPassword(formData: FormData): Promise<MagicLinkState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const next = String(formData.get("next") ?? "/");
+
+  if (!isValidEmail(email)) {
+    return { status: "error", message: "Skriv en giltig e-postadress.", email };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return {
+      status: "error",
+      message:
+        error.status === 429
+          ? "För många försök. Vänta en stund och försök igen."
+          : "Fel e-postadress eller lösenord. Har du inget lösenord än? Skicka en inloggningslänk och välj ett lösenord under Mitt konto.",
+      email,
+    };
+  }
+  redirect(safeNextPath(next));
+}
+
 export async function sendMagicLink(_prev: MagicLinkState, formData: FormData): Promise<MagicLinkState> {
   const email = String(formData.get("email") ?? "").trim();
   const next = String(formData.get("next") ?? "/");
