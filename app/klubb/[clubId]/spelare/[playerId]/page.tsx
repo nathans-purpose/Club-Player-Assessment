@@ -19,6 +19,7 @@ import { t } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS, type SquadGroup } from "@/lib/players/squad-groups";
 import { POSITION_CODES, POSITION_LABELS, POSITION_LEVEL_LABELS, type PositionCode } from "@/lib/positions";
 import { AssessmentForm } from "./assessment-form";
+import { SkippedNotice } from "./skipped-notice";
 
 export const metadata: Metadata = { title: `Spelarkort – ${APP_NAME}` };
 
@@ -94,57 +95,76 @@ async function PlayerCard({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[p
         )}
       </div>
 
-      <AssessmentForm
-        clubId={clubId}
-        playerId={playerId}
-        submitted={mine?.status === "submitted"}
-        initial={initial}
-        categories={categories.form}
-        phases={phases}
-        positions={positions}
-        copy={{
-          positionsTitle: t("card.positions.title", "Positioner"),
-          positionsHint: t(
-            "card.positions.hint",
-            "Tryck på de positioner spelaren kan spela och välj hur bra det funkar.",
-          ),
-          pitchLabel: t("card.positions.pitch", "Planen, välj positioner"),
-          positionNone: t("card.positions.none", "inte vald"),
-          remove: t("card.positions.remove", "Ta bort"),
-          close: t("common.close", "Stäng"),
-          ratingsTitle: t("card.ratings.title", "Betyg"),
-          ratingsHint: t("card.ratings.hint", "1 är svagast och 10 är bäst i laget."),
-          attendanceTitle: t("card.attendance.title", "Träningsnärvaro"),
-          attendanceHint: t("card.attendance.hint", "Valfritt. Svara ”Vet ej” om du inte vet."),
-          unknown: t("card.attendance.unknown", "Vet ej"),
-          commentTitle: t("card.comment.title", "Kommentar"),
-          commentHint: t("card.comment.hint", "Valfritt. De andra ledarna ser kommentaren när du har skickat in."),
-          missing: t("card.missing", "Det här saknas"),
-          missingSummary: t("card.missingSummary", "{count} saker saknas. Fyll i det som är markerat."),
-          answered: t("card.answered", "{done} av {total} besvarade"),
-          saving: t("card.saving", "Sparar …"),
-          saved: t("card.saved", "Sparat"),
-          saveFailed: t("card.saveFailed", "Kunde inte spara. Försöker igen när du ändrar något."),
-          submittedNote: t(
-            "card.submittedNote",
-            "Du har skickat in den här bedömningen. Ändringar sparas när du skickar in igen.",
-          ),
-          unsent: t("card.unsent", "Ändringar ej inskickade"),
-          submit: t("card.submit", "Skicka in"),
-          resubmit: t("card.resubmit", "Skicka in igen"),
-          submitting: t("card.submitting", "Skickar …"),
-          levels: Object.fromEntries(
-            Object.entries(POSITION_LEVEL_LABELS).map(([k, v]) => [k, t(`positionLevel.${k}`, v)]),
-          ) as typeof POSITION_LEVEL_LABELS,
-          positionLabels: Object.fromEntries(
-            Object.entries(POSITION_LABELS).map(([k, v]) => [k, t(`position.${k}`, v)]),
-          ) as typeof POSITION_LABELS,
-          attendance: ATTENDANCE_VALUES.map((value) => ({
-            value,
-            label: t(`attendance.${value}`, ATTENDANCE_LABELS[value]),
-          })),
-        }}
-      />
+      {mine?.status === "skipped" ? (
+        <SkippedNotice
+          clubId={clubId}
+          playerId={playerId}
+          copy={{
+            title: t("card.skipped.title", "Du har hoppat över spelaren"),
+            body: t(
+              "card.skipped.body",
+              "Spelaren räknas inte som bedömd av dig och påverkar inga snitt. Du kan bedöma spelaren när du vill.",
+            ),
+            undo: t("card.skipped.undo", "Bedöm ändå"),
+            undoing: t("card.skipped.undoing", "Öppnar …"),
+          }}
+        />
+      ) : (
+        <AssessmentForm
+          clubId={clubId}
+          playerId={playerId}
+          submitted={mine?.status === "submitted"}
+          initial={initial}
+          categories={categories.form}
+          phases={phases}
+          positions={positions}
+          copy={{
+            positionsTitle: t("card.positions.title", "Positioner"),
+            positionsHint: t(
+              "card.positions.hint",
+              "Tryck på de positioner spelaren kan spela och välj hur bra det funkar.",
+            ),
+            pitchLabel: t("card.positions.pitch", "Planen, välj positioner"),
+            positionNone: t("card.positions.none", "inte vald"),
+            remove: t("card.positions.remove", "Ta bort"),
+            close: t("common.close", "Stäng"),
+            ratingsTitle: t("card.ratings.title", "Betyg"),
+            ratingsHint: t("card.ratings.hint", "1 är svagast och 10 är bäst i laget."),
+            attendanceTitle: t("card.attendance.title", "Träningsnärvaro"),
+            attendanceHint: t("card.attendance.hint", "Valfritt. Svara ”Vet ej” om du inte vet."),
+            unknown: t("card.attendance.unknown", "Vet ej"),
+            commentTitle: t("card.comment.title", "Kommentar"),
+            commentHint: t("card.comment.hint", "Valfritt. De andra ledarna ser kommentaren när du har skickat in."),
+            missing: t("card.missing", "Det här saknas"),
+            missingSummary: t("card.missingSummary", "{count} saker saknas. Fyll i det som är markerat."),
+            answered: t("card.answered", "{done} av {total} besvarade"),
+            saving: t("card.saving", "Sparar …"),
+            saved: t("card.saved", "Sparat"),
+            saveFailed: t("card.saveFailed", "Kunde inte spara. Försöker igen när du ändrar något."),
+            submittedNote: t(
+              "card.submittedNote",
+              "Du har skickat in den här bedömningen. Ändringar sparas när du skickar in igen.",
+            ),
+            unsent: t("card.unsent", "Ändringar ej inskickade"),
+            submit: t("card.submit", "Skicka in"),
+            resubmit: t("card.resubmit", "Skicka in igen"),
+            submitting: t("card.submitting", "Skickar …"),
+            skip: t("card.skip", "Hoppa över"),
+            skipping: t("card.skipping", "Hoppar över …"),
+            skipHint: t("card.skipHint", "Om du inte har sett tillräckligt av spelaren för att bedöma"),
+            levels: Object.fromEntries(
+              Object.entries(POSITION_LEVEL_LABELS).map(([k, v]) => [k, t(`positionLevel.${k}`, v)]),
+            ) as typeof POSITION_LEVEL_LABELS,
+            positionLabels: Object.fromEntries(
+              Object.entries(POSITION_LABELS).map(([k, v]) => [k, t(`position.${k}`, v)]),
+            ) as typeof POSITION_LABELS,
+            attendance: ATTENDANCE_VALUES.map((value) => ({
+              value,
+              label: t(`attendance.${value}`, ATTENDANCE_LABELS[value]),
+            })),
+          }}
+        />
+      )}
     </>
   );
 }

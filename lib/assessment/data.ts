@@ -2,7 +2,7 @@ import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { setRequestTexts } from "@/lib/i18n";
-import type { Assessment, AttendanceValue, Category } from "@/lib/calc";
+import type { Assessment, AssessmentStatus, AttendanceValue, Category } from "@/lib/calc";
 import type { SquadGroup } from "@/lib/players/squad-groups";
 import type { PositionCode, PositionLevel } from "@/lib/positions";
 import { createClient } from "@/lib/supabase/server";
@@ -211,7 +211,7 @@ export type AssessmentRow = {
   id: string;
   player_id: string;
   leader_id: string;
-  status: "draft" | "submitted";
+  status: AssessmentStatus;
   comment: string | null;
   submitted_at: string | null;
   assessment_scores: { category_id: string; subcategory_id: string | null; score: number }[];
@@ -241,13 +241,22 @@ export function toPayloadFromRow(row: AssessmentRow): Payload {
   return { comment: row.comment ?? "", scores: calc.scores, positions: calc.positions, attendance: calc.attendance };
 }
 
-/** Player ids this leader has submitted in the season. */
-export async function loadSubmittedPlayerIds(supabase: Supabase, seasonId: string, userId: string): Promise<string[]> {
+async function loadOwnPlayerIds(supabase: Supabase, seasonId: string, userId: string, status: AssessmentStatus) {
   const { data } = await supabase
     .from("assessments")
     .select("player_id")
     .eq("season_id", seasonId)
     .eq("leader_id", userId)
-    .eq("status", "submitted");
+    .eq("status", status);
   return (data ?? []).map((r) => r.player_id as string);
+}
+
+/** Player ids this leader has submitted in the season. */
+export async function loadSubmittedPlayerIds(supabase: Supabase, seasonId: string, userId: string): Promise<string[]> {
+  return loadOwnPlayerIds(supabase, seasonId, userId, "submitted");
+}
+
+/** Player ids this leader has skipped ("Hoppa över") in the season. */
+export async function loadSkippedPlayerIds(supabase: Supabase, seasonId: string, userId: string): Promise<string[]> {
+  return loadOwnPlayerIds(supabase, seasonId, userId, "skipped");
 }

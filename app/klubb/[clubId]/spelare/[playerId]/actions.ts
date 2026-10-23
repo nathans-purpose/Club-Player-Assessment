@@ -1,8 +1,17 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isUuid, loadCategories, loadClubContext } from "@/lib/assessment/data";
+import {
+  isUuid,
+  loadCategories,
+  loadClubContext,
+  loadPlayers,
+  loadSkippedPlayerIds,
+  loadSubmittedPlayerIds,
+} from "@/lib/assessment/data";
 import { fromPayload, missingItems, parsePayload } from "@/lib/assessment/form";
+import { nextUnassessed } from "@/lib/calc";
 
 export type SaveResult = { ok: true } | { ok: false; message: string };
 
@@ -60,4 +69,52 @@ export async function submitAssessment(clubId: string, playerId: string, input: 
   const result = await persist(clubId, playerId, input, true);
   if (!result.ok) return result;
   redirect(`/klubb/${clubId}/spelare/${playerId}/tack`);
+}
+
+async function setSkipped(clubId: string, playerId: string, skipped: boolean) {
+  const context = await loadClubContext(clubId);
+  if (!context) return { ok: false as const, message: "Du är inte inloggad längre. Logga in och försök igen." };
+  const { supabase, userId, team, season } = context;
+  if (!team || !season) return { ok: false as const, message: "Laget har ingen aktiv säsong." };
+  if (!isUuid(playerId)) return { ok: false as const, message: "Spelaren hittades inte." };
+
+  const { error } = await supabase.rpc("set_assessment_skipped", {
+    p_season_id: season.id,
+    p_player_id: playerId,
+    p_skipped: skipped,
+  });
+  if (error) {
+    if (error.message.includes("cannot be skipped")) {
+      return { ok: false as const, message: "Du har redan skickat in en bedömning av spelaren." };
+    }
+    return { ok: false as const, message: "Det gick inte att spara. Försök igen." };
+  }
+  return { ok: true as const, supabase, userId, team, season };
+}
+
+/** "Hoppa över": the leader can't assess this player. Continues to the next player. */
+export async function skipPlayer(clubId: string, playerId: string): Promise<SaveResult> {
+  const result = await setSkipped(clubId, playerId, true);
+  if (!result.ok) return result;
+  const { supabase, userId, team, season } = result;
+
+  const [players, submittedIds, skippedIds] = await Promise.all([
+    loadPlayers(supabase, team.id),
+    loadSubmittedPlayerIds(supabase, season.id, userId),
+    loadSkippedPlayerIds(supabase, season.id, userId),
+  ]);
+  const nextId = nextUnassessed(
+    players.map((p) => p.id),
+    playerId,
+    [...submittedIds, ...skippedIds],
+  );
+  redirect(`/klubb/${clubId}/spelare${nextId ? `/${nextId}` : ""}`);
+}
+
+/** Undoes a skip; the player goes back to a draft. */
+export async function undoSkip(clubId: string, playerId: string): Promise<SaveResult> {
+  const result = await setSkipped(clubId, playerId, false);
+  if (!result.ok) return result;
+  revalidatePath(`/klubb/${clubId}/spelare/${playerId}`);
+  return { ok: true };
 }

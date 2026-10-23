@@ -260,3 +260,79 @@ describe("save_assessment", () => {
     );
   });
 });
+
+describe("set_assessment_skipped", () => {
+  const skipSql = "select * from set_assessment_skipped($1, $2, $3)";
+  let player: string;
+
+  async function skip(userId: string | null, skipped: boolean, playerId = player) {
+    return asUser(
+      db,
+      userId,
+      async (q) => (await q<{ assessment_id: string; status: string }>(skipSql, [SEASON_A, playerId, skipped])).rows[0],
+      { commit: true },
+    );
+  }
+
+  beforeAll(async () => {
+    player = (
+      await db.query<{ id: string }>(
+        `select p.id from players p
+         where p.team_id = '00000000-0000-4000-a000-000000000002' and p.id <> $2
+           and not exists (select 1 from assessments a where a.player_id = p.id and a.leader_id = $1)
+         order by p.full_name limit 1`,
+        [LEADER_A1, playerA],
+      )
+    ).rows[0].id;
+  });
+
+  it("skips a player the leader hasn't started, hidden from the club", async () => {
+    const skipped = await skip(LEADER_A1, true);
+    expect(skipped.status).toBe("skipped");
+    const seenByOther = await asUser(
+      db,
+      LEADER_A2,
+      async (q) => (await q("select id from assessments where id = $1", [skipped.assessment_id])).rowCount,
+    );
+    expect(seenByOther).toBe(0);
+  });
+
+  it("takes no draft saves while skipped", async () => {
+    await expect(save(LEADER_A1, SEASON_A, player, false, { comment: "x" })).rejects.toThrow(/skip is undone/);
+  });
+
+  it("brings back the draft, with its answers, when the skip is undone", async () => {
+    expect((await skip(LEADER_A1, false)).status).toBe("draft");
+    const saved = await save(LEADER_A1, SEASON_A, player, false, {
+      scores: [{ category_id: categoriesA[1].id, subcategory_id: null, score: 5 }],
+    });
+    expect((await skip(LEADER_A1, true)).status).toBe("skipped");
+    expect((await skip(LEADER_A1, false)).status).toBe("draft");
+    expect((await answersOf(saved.assessment_id)).scores).toEqual([
+      { category_id: categoriesA[1].id, subcategory_id: null, score: 5 },
+    ]);
+  });
+
+  it("lets a skipped player be submitted, which replaces the skip", async () => {
+    await skip(LEADER_A1, true);
+    const saved = await save(LEADER_A1, SEASON_A, player, true, {
+      scores: fullScores(6),
+      positions: [{ position_code: "CM", level: 3 }],
+    });
+    expect(saved.status).toBe("submitted");
+    const { rows } = await db.query("select submitted_at is not null as stamped from assessments where id = $1", [
+      saved.assessment_id,
+    ]);
+    expect(rows[0]).toEqual({ stamped: true });
+  });
+
+  it("does not skip a submitted assessment", async () => {
+    await expect(skip(LEADER_A1, true)).rejects.toThrow(/cannot be skipped/);
+  });
+
+  it("does not let a leader skip another club's player, or anyone skip without signing in", async () => {
+    await expect(skip(LEADER_A1, true, B.player)).rejects.toThrow();
+    await expect(skip(outsider, true, playerA)).rejects.toThrow();
+    await expect(asUser(db, null, (q) => q(skipSql, [SEASON_A, player, true]))).rejects.toThrow(/permission denied/);
+  });
+});

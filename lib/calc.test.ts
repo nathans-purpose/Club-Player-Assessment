@@ -403,7 +403,12 @@ describe("leader progress", () => {
   const ids = ["p1", "p2", "p3", "p4"];
 
   it("counts each submitted player once", () => {
-    expect(leaderProgress(ids, ["p1", "p3", "p3", "gone"])).toEqual({ done: 2, total: 4 });
+    expect(leaderProgress(ids, ["p1", "p3", "p3", "gone"])).toEqual({ done: 2, total: 4, skipped: 0 });
+  });
+
+  it("leaves skipped players out of the total", () => {
+    expect(leaderProgress(ids, ["p1"], ["p2", "gone"])).toEqual({ done: 1, total: 3, skipped: 1 });
+    expect(leaderProgress(ids, ["p1", "p2", "p3"], ["p4"])).toEqual({ done: 3, total: 3, skipped: 1 });
   });
 
   it("finds the next unassessed player, wrapping around", () => {
