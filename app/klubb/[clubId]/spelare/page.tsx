@@ -3,19 +3,19 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { GuardianInfo } from "@/components/guardian-info";
 import { loadPlayers, requireClubMember } from "@/lib/assessment/data";
-import { leaderProgress } from "@/lib/calc";
+import { type AssessmentStatus, leaderProgress } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
 import { EditableText } from "@/components/text-edit";
 import { t, te } from "@/lib/i18n";
 import { SQUAD_GROUP_LABELS } from "@/lib/players/squad-groups";
 import { guardianInfoCopy } from "@/lib/privacy/guardian";
 import { PlayerList, type PlayerListItem } from "./player-list";
-import { ProgressBar } from "./progress-bar";
+import { ProgressBar, progressLabel } from "./progress-bar";
 
 export const metadata: Metadata = { title: `Bedöm spelare – ${APP_NAME}` };
 
 // The leader's way into Spelarkort: every active player with the leader's own
-// status (Ej påbörjad / Utkast / Inskickad).
+// status (Ej påbörjad / Utkast / Inskickad / Överhoppad).
 export default function PlayersPage({ params }: PageProps<"/klubb/[clubId]/spelare">) {
   return (
     <Suspense fallback={<p className="text-muted">{t("common.loading", "Laddar …")}</p>}>
@@ -32,10 +32,12 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
   const { data: mine } = season
     ? await supabase.from("assessments").select("player_id, status").eq("season_id", season.id).eq("leader_id", userId)
     : { data: [] };
-  const statusOf = new Map((mine ?? []).map((a) => [a.player_id as string, a.status as "draft" | "submitted"]));
+  const statusOf = new Map((mine ?? []).map((a) => [a.player_id as string, a.status as AssessmentStatus]));
+  const withStatus = (status: AssessmentStatus) => [...statusOf].filter(([, s]) => s === status).map(([id]) => id);
   const progress = leaderProgress(
     players.map((p) => p.id),
-    [...statusOf].filter(([, s]) => s === "submitted").map(([id]) => id),
+    withStatus("submitted"),
+    withStatus("skipped"),
   );
 
   const items: PlayerListItem[] = players.map((p) => ({ ...p, status: statusOf.get(p.id) ?? "none" }));
@@ -99,9 +101,7 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
           <ProgressBar
             done={progress.done}
             total={progress.total}
-            label={t("players.progress", "{done} av {total} spelare bedömda")
-              .replace("{done}", String(progress.done))
-              .replace("{total}", String(progress.total))}
+            label={progressLabel(progress)}
           />
           <PlayerList
             clubId={clubId}
@@ -116,6 +116,7 @@ async function Players({ params }: Pick<PageProps<"/klubb/[clubId]/spelare">, "p
                 none: t("players.status.none", "Ej påbörjad"),
                 draft: t("players.status.draft", "Utkast"),
                 submitted: t("players.status.submitted", "Inskickad"),
+                skipped: t("players.status.skipped", "Överhoppad"),
               },
               groups: Object.fromEntries(
                 Object.entries(SQUAD_GROUP_LABELS).map(([k, v]) => [k, t(`squadGroup.${k}`, v)]),
