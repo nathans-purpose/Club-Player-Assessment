@@ -42,6 +42,18 @@ test("a leader explores the squad overview", async ({ page }, testInfo) => {
   await page.keyboard.press("Escape");
   await expect(striker).toHaveAttribute("aria-expanded", "false");
 
+  // Level chips narrow the pitch to natural players; all three is the default.
+  const levelChips = page.getByRole("group", { name: "Räkna med" });
+  await expect(levelChips.getByRole("button", { name: "Alla som kan spela" })).toHaveAttribute("aria-pressed", "true");
+  await levelChips.getByRole("button", { name: "Bara naturliga" }).click();
+  await expect(levelChips.getByRole("button", { name: "Bara naturliga" })).toHaveAttribute("aria-pressed", "true");
+  await striker.click();
+  await expect(tooltip).toContainText("Melvin Strand");
+  await expect(tooltip).not.toContainText("Funkar bra");
+  await expect(tooltip).not.toContainText("Kan spela");
+  await striker.click();
+  await levelChips.getByRole("button", { name: "Alla som kan spela" }).click();
+
   // Metric chips switch the pitch to an attribute.
   await page.getByRole("group", { name: "Visa på planen" }).getByRole("button", { name: "Teknik" }).click();
   await expect(page.getByRole("button", { name: /^Anfallare: \d,\d$/ })).toBeVisible();
