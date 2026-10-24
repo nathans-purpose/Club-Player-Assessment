@@ -16,9 +16,12 @@ export type ScoreRow = { categoryId: string; subcategoryId: string | null; score
 export const ATTENDANCE_VALUES = [95, 80, 55, 25] as const;
 export type AttendanceValue = (typeof ATTENDANCE_VALUES)[number];
 
+/** "skipped": the leader couldn't assess the player. Like a draft, it never counts. */
+export type AssessmentStatus = "draft" | "submitted" | "skipped";
+
 export type Assessment = {
   leaderId: string;
-  status: "draft" | "submitted";
+  status: AssessmentStatus;
   scores: ScoreRow[];
   positions: { code: PositionCode; level: PositionLevel }[];
   /** Phases answered "Vet ej" have no row. */
@@ -433,15 +436,19 @@ export function bestAndWorst(
  * "X av N spelare bedömda": players this leader has submitted, counted once
  * each however many times they resubmit.
  */
+/** Skipped players are left out of the total, so a leader can still finish. */
 export function leaderProgress(
   playerIds: readonly string[],
   submittedPlayerIds: Iterable<string>,
-): { done: number; total: number } {
+  skippedPlayerIds: Iterable<string> = [],
+): { done: number; total: number; skipped: number } {
   const submitted = new Set(submittedPlayerIds);
-  return { done: playerIds.filter((id) => submitted.has(id)).length, total: playerIds.length };
+  const skippedSet = new Set(skippedPlayerIds);
+  const skipped = playerIds.filter((id) => skippedSet.has(id) && !submitted.has(id)).length;
+  return { done: playerIds.filter((id) => submitted.has(id)).length, total: playerIds.length - skipped, skipped };
 }
 
-/** The next player in list order, after `currentId`, that isn't submitted yet. */
+/** The next player in list order, after `currentId`, that isn't submitted (or skipped) yet. */
 export function nextUnassessed(
   playerIds: readonly string[],
   currentId: string,

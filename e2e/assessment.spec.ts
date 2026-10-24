@@ -121,3 +121,58 @@ test("a leader assesses a player, sees the combined view and resubmits", async (
   await expect(page.getByRole("heading", { name: "Tack!" })).toBeVisible();
   expect(progressCount(await page.getByText(/spelare bedömda/).first().textContent())).toBe(after);
 });
+
+test("a leader skips a player they can't assess, then assesses them anyway", async ({ page }, testInfo) => {
+  const { email, player: assessedName } = SETUP_BY_PROJECT[testInfo.project.name];
+  // A player this leader has neither submitted nor drafted in the seed.
+  const db = new Client({ connectionString: DATABASE_URL });
+  await db.connect();
+  let playerName: string;
+  try {
+    await db.query(
+      "delete from assessments a using auth.users u where u.id = a.leader_id and u.email = $1 and a.status = 'skipped'",
+      [email],
+    );
+    playerName = (
+      await db.query<{ full_name: string }>(
+        `select p.full_name from players p
+         where p.is_active and p.full_name <> $2
+           and not exists (
+             select 1 from assessments a join auth.users u on u.id = a.leader_id
+             where a.player_id = p.id and u.email = $1
+           )
+         order by p.full_name limit 1`,
+        [email, assessedName],
+      )
+    ).rows[0].full_name;
+  } finally {
+    await db.end();
+  }
+
+  await signIn(page, email);
+  await page.getByRole("link", { name: "Bedöm spelare" }).click();
+  await page.getByLabel("Sök spelare").fill(playerName.split(" ")[0].toLowerCase());
+  const row = page.getByRole("link", { name: new RegExp(playerName) });
+  const playerHref = (await row.getAttribute("href"))!;
+  await row.click();
+  await expect(page.getByRole("heading", { name: playerName })).toBeVisible();
+
+  // Hoppa över moves on to another player.
+  await page.getByRole("button", { name: "Hoppa över" }).click();
+  await expect(page).not.toHaveURL(new RegExp(`${playerHref}$`));
+
+  // The list marks the player as skipped and counts them apart.
+  await page.goto(playerHref.replace(/\/[^/]+$/, ""));
+  await expect(page.getByText(/spelare bedömda \(1 överhoppad\)/).first()).toBeVisible();
+  await page.getByLabel("Sök spelare").fill(playerName.split(" ")[0].toLowerCase());
+  await expect(page.getByRole("link", { name: new RegExp(playerName) })).toContainText("Överhoppad");
+  await expectNoHorizontalScroll(page);
+
+  // Undoing the skip brings the form back.
+  await page.goto(playerHref);
+  await expect(page.getByRole("heading", { name: "Du har hoppat över spelaren" })).toBeVisible();
+  await page.getByRole("button", { name: "Bedöm ändå" }).click();
+  await expect(page.getByRole("button", { name: "Skicka in" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Hoppa över" })).toBeVisible();
+  await clearAssessment(email, playerName);
+});

@@ -39,3 +39,35 @@ test("a broken sign-in link shows an error", async ({ page }) => {
   await expect(page).toHaveURL(/\/logga-in\?fel=lank$/);
   await expect(page.getByText("Länken är ogiltig")).toHaveAttribute("role", "alert");
 });
+
+test("a user sets a password under Mitt konto and then signs in with it", async ({ page }, testInfo) => {
+  const email = `losenord-${testInfo.project.name}-${Date.now()}@example.com`;
+  const password = "hemligt-lösen-42";
+  await signIn(page, email);
+  await page.getByRole("link", { name: "Mitt konto" }).click();
+  await expect(page.getByRole("heading", { name: "Mitt konto" })).toBeVisible();
+
+  await page.getByLabel("Nytt lösenord").fill(password);
+  await page.getByLabel("Skriv lösenordet igen").fill("något-annat");
+  await page.getByRole("button", { name: "Spara lösenord" }).click();
+  await expect(page.getByText("Lösenorden är inte likadana.")).toHaveAttribute("role", "alert");
+
+  await page.getByLabel("Nytt lösenord").fill(password);
+  await page.getByLabel("Skriv lösenordet igen").fill(password);
+  await page.getByRole("button", { name: "Spara lösenord" }).click();
+  await expect(page.getByText("Lösenordet är sparat.")).toBeVisible();
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Logga ut" }).click();
+  await expect(page).toHaveURL(/\/logga-in$/);
+
+  await page.getByLabel("E-postadress").fill(email);
+  await page.getByLabel("Lösenord", { exact: true }).fill("fel-lösenord");
+  await page.getByRole("button", { name: "Logga in", exact: true }).click();
+  await expect(page.getByText("Fel e-postadress eller lösenord.")).toHaveAttribute("role", "alert");
+
+  await page.getByLabel("Lösenord", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Logga in", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "Du är inte med i någon klubb än" })).toBeVisible();
+});

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
+import type { AssessmentStatus } from "@/lib/calc";
 import type { SquadGroup } from "@/lib/players/squad-groups";
 
 export type PlayerListItem = {
@@ -9,7 +10,7 @@ export type PlayerListItem = {
   shirtNumber: string | null;
   fullName: string;
   squadGroup: SquadGroup | null;
-  status: "none" | "draft" | "submitted";
+  status: "none" | AssessmentStatus;
 };
 
 type Copy = {
@@ -26,6 +27,7 @@ const STATUS_CLASS: Record<PlayerListItem["status"], string> = {
   none: "border-border bg-surface-muted text-muted",
   draft: "border-scale-mid bg-scale-mid/20",
   submitted: "border-primary/40 bg-primary/10 text-primary-ink",
+  skipped: "border-dashed border-border bg-surface text-muted",
 };
 
 function normalize(text: string) {

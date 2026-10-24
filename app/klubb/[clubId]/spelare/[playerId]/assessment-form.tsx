@@ -13,7 +13,7 @@ import {
 } from "@/lib/assessment/form";
 import type { AttendanceValue } from "@/lib/calc";
 import { POSITION_COORDS, POSITION_LEVELS, type PositionCode, type PositionLevel } from "@/lib/positions";
-import { saveDraft, submitAssessment } from "./actions";
+import { saveDraft, skipPlayer, submitAssessment } from "./actions";
 
 type Copy = Record<
   | "positionsTitle"
@@ -39,7 +39,10 @@ type Copy = Record<
   | "unsent"
   | "submit"
   | "resubmit"
-  | "submitting",
+  | "submitting"
+  | "skip"
+  | "skipping"
+  | "skipHint",
   string
 > & {
   levels: Record<PositionLevel, string>;
@@ -84,6 +87,7 @@ export function AssessmentForm({
   const [showMissing, setShowMissing] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitting, startSubmit] = useTransition();
+  const [skipping, startSkip] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveSeq = useRef(0);
   const latest = useRef(state);
@@ -163,6 +167,17 @@ export function AssessmentForm({
     timer.current = null;
     startSubmit(async () => {
       const result = await submitAssessment(clubId, playerId, toPayload(latest.current, categories));
+      if (result && !result.ok) setSubmitError(result.message);
+    });
+  }
+
+  // "Hoppa över": the leader can't assess this player. Draft answers are kept.
+  function handleSkip() {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    setSubmitError("");
+    startSkip(async () => {
+      const result = await skipPlayer(clubId, playerId);
       if (result && !result.ok) setSubmitError(result.message);
     });
   }
@@ -303,13 +318,26 @@ export function AssessmentForm({
               {statusText}
             </span>
           </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="min-h-11 shrink-0 rounded-lg bg-primary px-5 font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink disabled:opacity-60"
-          >
-            {submitting ? copy.submitting : submitted ? copy.resubmit : copy.submit}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {!submitted && (
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={submitting || skipping}
+                title={copy.skipHint}
+                className="min-h-11 rounded-lg border border-border bg-surface px-3 font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink disabled:opacity-60"
+              >
+                {skipping ? copy.skipping : copy.skip}
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={submitting || skipping}
+              className="min-h-11 rounded-lg bg-primary px-5 font-semibold text-on-primary hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-ink disabled:opacity-60"
+            >
+              {submitting ? copy.submitting : submitted ? copy.resubmit : copy.submit}
+            </button>
+          </div>
         </div>
       </div>
     </form>

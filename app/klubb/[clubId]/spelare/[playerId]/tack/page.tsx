@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { isUuid, loadPlayers, loadSubmittedPlayerIds, requireClubMember } from "@/lib/assessment/data";
+import {
+  isUuid,
+  loadPlayers,
+  loadSkippedPlayerIds,
+  loadSubmittedPlayerIds,
+  requireClubMember,
+} from "@/lib/assessment/data";
 import { leaderProgress, nextUnassessed } from "@/lib/calc";
 import { APP_NAME } from "@/lib/config";
 import { EditableText } from "@/components/text-edit";
 import { t, te } from "@/lib/i18n";
-import { ProgressBar } from "../../progress-bar";
+import { ProgressBar, progressLabel } from "../../progress-bar";
 
 export const metadata: Metadata = { title: `Tack! – ${APP_NAME}` };
 
@@ -25,17 +31,18 @@ async function ThankYou({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
   const { supabase, userId, team, season } = await requireClubMember(clubId);
   if (!team || !season || !isUuid(playerId)) notFound();
 
-  const [players, submittedIds] = await Promise.all([
+  const [players, submittedIds, skippedIds] = await Promise.all([
     loadPlayers(supabase, team.id),
     loadSubmittedPlayerIds(supabase, season.id, userId),
+    loadSkippedPlayerIds(supabase, season.id, userId),
   ]);
   const player = players.find((p) => p.id === playerId);
   if (!player) notFound();
   if (!submittedIds.includes(playerId)) redirect(`/klubb/${clubId}/spelare/${playerId}`);
 
   const ids = players.map((p) => p.id);
-  const progress = leaderProgress(ids, submittedIds);
-  const nextId = nextUnassessed(ids, playerId, submittedIds);
+  const progress = leaderProgress(ids, submittedIds, skippedIds);
+  const nextId = nextUnassessed(ids, playerId, [...submittedIds, ...skippedIds]);
   const next = players.find((p) => p.id === nextId);
   const base = `/klubb/${clubId}/spelare`;
 
@@ -52,9 +59,7 @@ async function ThankYou({ params }: Pick<PageProps<"/klubb/[clubId]/spelare/[pla
         <ProgressBar
           done={progress.done}
           total={progress.total}
-          label={t("players.progress", "{done} av {total} spelare bedömda")
-            .replace("{done}", String(progress.done))
-            .replace("{total}", String(progress.total))}
+          label={progressLabel(progress)}
         />
       </div>
 

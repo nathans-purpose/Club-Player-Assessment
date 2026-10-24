@@ -22,7 +22,7 @@ export default function LoginPage({ searchParams }: PageProps<"/logga-in">) {
         <p className="text-sm font-medium text-muted">{APP_NAME}</p>
         <h1 className="mt-1 text-2xl font-bold">{t("login.title", "Logga in eller skapa konto")}</h1>
         <p className="mt-2 text-muted">
-          {t("login.intro", "Använd ditt Google-konto eller få en inloggningslänk till din e-post.")}
+          {t("login.intro", "Logga in med e-post och lösenord, ditt Google-konto eller en inloggningslänk till din e-post.")}
         </p>
       </div>
 
