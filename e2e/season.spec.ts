@@ -2,8 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { signInHere, uniqueEmail } from "./helpers";
 
 // Säsong on a club of its own: log a match, evaluate the season, read the
-// summary, and plan the next season with a priority from the evaluation and
-// a recruitment target.
+// summary, plan the next season with a priority from the evaluation and
+// a recruitment target, and see it all on the overview.
 
 async function expectNoHorizontalScroll(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -124,5 +124,17 @@ test("leaders evaluate a season and plan the next one", async ({ page }, testInf
   await expect(page.getByRole("row", { name: /Anfallare/ })).toContainText("Extern Testspelare");
   await page.getByRole("button", { name: "Spara truppen" }).click();
   await expect(page.getByText("Sparat").last()).toBeVisible();
+  await expectNoHorizontalScroll(page);
+
+  // The overview: this season's numbers and evaluation, and how far next season's plan has got.
+  await page.getByRole("link", { name: "← Alla säsonger" }).filter({ visible: true }).click();
+  await expect(page.getByRole("heading", { name: "Säsong", level: 1 })).toBeVisible();
+  const now = page.getByRole("region", { name: `Säsong ${year}`, exact: true });
+  await expect(now).toContainText("1 – 0 – 0");
+  await expect(now.getByText("Starkast")).toBeVisible();
+  const upcoming = page.getByRole("list", { name: "Kommande säsonger" });
+  await expect(upcoming).toContainText("Topp tre");
+  await expect(upcoming).toContainText("Uppspelsövning varje tisdag");
+  await expect(upcoming).toContainText("1 på gång");
   await expectNoHorizontalScroll(page);
 });
